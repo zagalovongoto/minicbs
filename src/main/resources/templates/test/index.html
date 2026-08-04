@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratoire de Test HTMX</title>
+    <!-- Bootstrap 5 pour le design -->
+    <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTMX Officiel -->
+    <script src="/vendor/htmx/htmx.min.js" defer></script>
+</head>
+<body class="bg-light">
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Premier test</h1>
+        <p class="lead text-muted">Testez la réactivité sans écrire une ligne de JavaScript !</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- TEST 1 : Remplacement Simple (innerHTML) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-success">1. Test innerHTML</h5>
+                    <p class="card-text text-muted">Cliquez pour charger du texte à l'intérieur de l'alerte bleue (la boîte reste en place).</p>
+
+                    <!-- Requête vers une API publique de blagues (renvoie du texte brut) -->
+                    <button hx-get="http://localhost:8087/htmx/test1"
+                            hx-target="#joke-box"
+                            hx-swap="beforeend"
+                            class="btn btn-success w-100">
+                        Générer une blague de dev
+                    </button>
+
+                    <div id="joke-box" class="alert alert-info mt-3 small">
+                        La blague s'affichera ici...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 2 : Remplacement Complet (outerHTML) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">2. Test outerHTML</h5>
+                    <p class="card-text text-muted">Cliquez sur le bouton "Supprimer". La ligne du tableau disparaîtra complètement du code HTML.</p>
+
+                    <table class="table table-sm border mt-3">
+                        <thead>
+                            <tr>
+                                <th>Élément</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Au clic, HTMX envoie un DELETE simulé à une API de test.
+                                 La réponse de cette API est vide, donc outerHTML va effacer la ligne entière. -->
+                            <tr id="ligne-test">
+                                <td>Donnée importante 1</td>
+                                <td>
+                                    <button hx-delete="http://localhost:8087/htmx/test1"
+                                            hx-target="#ligne-test"
+                                            hx-swap="outerHTML"
+                                            hx-confirm="Êtes-vous sûr de vouloir supprimer cette ligne ?"
+                                            class="btn btn-sm btn-danger">
+                                        Supprimer
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 3 : Chargement tardif (Lazy Loading) -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">3. Lazy Loading</h5>
+                    <p class="card-text text-muted">Ce bloc charge son contenu automatiquement dès que la page a fini de s'afficher.</p>
+
+                    <!-- hx-trigger="load" se déclenche tout seul au démarrage -->
+                    <div hx-get="http://localhost:8087/htmx/test1"
+                         hx-trigger="load"
+                         hx-target="#profile-box"
+                         class="mt-3">
+                        <div id="profile-box" class="text-center p-3 border rounded bg-white">
+                            <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
+                            <span class="ms-2 small text-muted">Chargement du profil...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

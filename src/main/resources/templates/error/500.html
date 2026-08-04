@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Erreur Interne (500)</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; background-color: #f8f9fa; }
+        .container { max-width: 700px; margin: 0 auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #6c757d; font-size: 3.5em; margin-bottom: 10px; }
+        h2 { color: #343a40; margin-top: 0; }
+        p { color: #6c757d; font-size: 1.1em; line-height: 1.5; }
+        .btn-home { display: inline-block; margin-top: 25px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-home:hover { background-color: #0056b3; }
+        .tech-details { margin-top: 30px; text-align: left; background: #f1f3f5; padding: 15px; border-left: 4px solid #6c757d; border-radius: 4px; display: none; }
+        .show-details-btn { background: none; border: none; color: #6c757d; text-decoration: underline; cursor: pointer; font-size: 0.9em; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>500</h1>
+        <h2>Erreur Interne du Serveur</h2>
+        <p>Désolé, un problème technique inattendu est survenu sur notre serveur. Nos équipes ont été notifiées et travaillent à sa résolution.</p>
+        
+        <a th:href="@{/users}" class="btn-home">Retourner à la gestion des utilisateurs</a>
+
+        <!-- Section technique optionnelle (masquée par défaut, utile en développement) -->
+        <br/>
+        <button class="show-details-btn" onclick="toggleDetails()">Afficher les détails techniques</button>
+        
+        <div id="details" class="tech-details">
+            <strong>Chemin :</strong> <span th:text="${path}">/users/save</span><br/>
+            <strong>Erreur :</strong> <span th:text="${error}">Internal Server Error</span><br/>
+            <strong>Message :</strong> <span th:text="${message}">Détails du crash</span>
+        </div>
+    </div>
+
+    <!--script>
+        function toggleDetails() {
+            var details = document.getElementById("details");
+            var btn = document.querySelector(".show-details-btn");
+            if (details.style.display === "none" || details.style.display === "") {
+                details.style.display = "block";
+                btn.innerText = "Masquer les détails techniques";
+            } else {
+                details.style.display = "none";
+                btn.innerText = "Afficher les détails techniques";
+            }
+        }
+    </script-->
+</body>
+</html>

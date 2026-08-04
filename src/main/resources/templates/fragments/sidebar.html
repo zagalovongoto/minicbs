@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="sidebar" class="d-flex flex-column h-100 justify-content-between">
+
+    <div class="navigation-links">
+
+        <!-- SECTION 1 : VUE GLOBALE -->
+        <p class="text-uppercase text-muted tracking-wider fw-bold small px-3 mb-2" style="font-size: 0.7rem;">Pilotage</p>
+        <ul class="nav flex-column gap-1 list-unstyled mb-3">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   th:href="@{/}"
+                   th:classappend="${currentPage == 'dashboard'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-speedometer2 fs-5"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- SECTION 2 : RELATIONS CLIENTS (KYC) -->
+        <p class="text-uppercase text-muted tracking-wider fw-bold small px-3 mb-2" style="font-size: 0.7rem;">Gestion Clientèle</p>
+        <ul class="nav flex-column gap-1 list-unstyled mb-3">
+            <!-- Clients Portefeuille -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   th:href="@{/clients}"
+                   th:classappend="${currentPage == 'clients'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-person-bounding-box fs-5"></i>
+                    <span>Portefeuille Clients</span>
+                </a>
+            </li>
+            <!-- Comptes Bancaires -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   th:href="@{/accounts}"
+                   th:classappend="${currentPage == 'accounts'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-wallet2 fs-5"></i>
+                    <span>Comptes GIM-RIB</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- SECTION 3 : PRODUCTION COMPTABLE & TRANSACTIONS (CORE) -->
+        <p class="text-uppercase text-muted tracking-wider fw-bold small px-3 mb-2" style="font-size: 0.7rem;">Opérations Bancaires</p>
+        <ul class="nav flex-column gap-1 list-unstyled mb-3">
+            <!-- Sous-menu Transactions Extensible -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center justify-content-between px-3 py-2 rounded-3 fw-medium text-secondary transition hover:bg-light"
+                   data-bs-toggle="collapse" href="#menuTransactions" role="button"
+                   th:aria-expanded="${currentPage == 'transactions' || currentPage == 'guichet'}" aria-controls="menuTransactions">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-cash-coin fs-5"></i>
+                        <span>Guichet Unique</span>
+                    </div>
+                    <i class="bi bi-chevron-down small text-muted"></i>
+                </a>
+                <!-- Liste effondrable des opérations -->
+                <div class="collapse ps-3 mt-1" id="menuTransactions"
+                     th:classappend="${currentPage == 'transactions' || currentPage == 'guichet'} ? 'show'">
+                    <ul class="nav flex-column gap-1 list-unstyled border-start ps-2">
+                        <li>
+                            <a class="nav-link py-1.5 small text-secondary hover:text-dark transition"
+                               th:href="@{/transactions/guichet}"
+                               th:classappend="${currentPage == 'guichet'} ? 'text-primary fw-bold'">
+                                <i class="bi bi-arrow-right-short me-1"></i>Saisir Opération
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link py-1.5 small text-secondary hover:text-dark transition" th:href="@{/transactions/journal}">
+                                <i class="bi bi-arrow-right-short me-1"></i>Grand Livre (Journal)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Virement Interbancaire ISO 20022 -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   href="#" th:classappend="${currentPage == 'iso20022'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-file-earmark-code fs-5"></i>
+                    <span>Messages ISO 20022</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- SECTION 4 : SECURITE & CONSOLE SYSTEME -->
+        <p class="text-uppercase text-muted tracking-wider fw-bold small px-3 mb-2" style="font-size: 0.7rem;">Sécurité & Système</p>
+        <ul class="nav flex-column gap-1 list-unstyled">
+            <!-- Gestionnaires Habilitations -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   th:href="@{/users}"
+                   th:classappend="${currentPage == 'users'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-shield-user fs-5"></i>
+                    <span>Gestionnaires</span>
+                </a>
+            </li>
+            <!-- Rôles -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   href="#" th:classappend="${currentPage == 'roles'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-shield-lock fs-5"></i>
+                    <span>Rôles & Droits</span>
+                </a>
+            </li>
+            <!-- Audit de sécurité -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   href="#" th:classappend="${currentPage == 'audit'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-journal-check fs-5"></i>
+                    <span>Piste d'Audit</span>
+                </a>
+            </li>
+            <!-- Paramètres Applicatifs -->
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
+                   href="#" th:classappend="${currentPage == 'settings'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                    <i class="bi bi-gear fs-5"></i>
+                    <span>Paramètres Globaux</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Pied de la Sidebar -->
+    <div class="pt-3 border-top border-light-subtle">
+        <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary hover:bg-light hover:text-dark transition mb-1" href="#">
+            <i class="bi bi-person-circle fs-5"></i>
+            <span>Mon Profil</span>
+        </a>
+        <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-danger hover:bg-danger hover:bg-opacity-10 transition" href="#">
+            <i class="bi bi-box-arrow-right fs-5"></i>
+            <span>Déconnexion</span>
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

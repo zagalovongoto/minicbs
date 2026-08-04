@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Guichet des Opérations</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Guichet Unique d'Opérations
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Messages de succès ou d'erreur globale -->
+    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center gap-2 mb-4 p-3 rounded-3 border-0 shadow-sm bg-success bg-opacity-10 text-success fw-medium">
+        <i class="bi bi-check-circle-fill fs-5"></i>
+        <span th:text="${successMessage}">Succès</span>
+    </div>
+
+    <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <div>
+            <strong class="d-block">Refus d'Opération (Erreur Système)</strong>
+            <span th:text="${globalErrorMessage}" class="small text-secondary-soft">Détails...</span>
+        </div>
+    </div>
+
+    <!-- CARD DU GUICHET UNIQUE -->
+    <div class="card card-saas card-guichet shadow-sm mx-auto">
+        <div class="card-header-form border-bottom">
+            <h4 class="fw-bold text-dark m-0"><i class="bi bi-cash-coin text-primary me-2"></i>Saisie d'un Ordre Financier</h4>
+            <p class="text-muted small m-0 mt-1">Sélectionnez le type de mouvement comptable et saisissez les coordonnées IBAN de la zone UEMOA.</p>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- ALPINIZATION : Initialisation du composant réactif Alpine.js -->
+            <form th:action="@{/transactions/execute}" th:object="${transactionDTO}" method="post"
+                  x-data="{ typeOp: '', montant: 0, tauxFrais: 0.005 }">
+
+                <!-- RÔLE ALPINE : Surveillance du type d'opération -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Nature du Mouvement Comptable</label>
+                        <select th:field="*{type}" class="form-select form-select-saas" th:errorclass="is-invalid"
+                                x-model="typeOp"> <!-- Liaison de la valeur à la variable typeOp de Alpine -->
+                            <option value="">-- Sélectionner l'opération --</option>
+                            <option th:each="t : ${allTypes}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                        <div class="invalid-feedback feedback-saas" th:errors="*{type}"></div>
+                    </div>
+
+                    <!-- Champ Montant avec calculatrice de frais Alpine en temps réel -->
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Montant de l'opération (XOF)</label>
+                        <div class="input-group">
+                            <input type="number" th:field="*{amount}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="0"
+                                   x-model.number="montant"> <!-- Liaison numérique Alpine -->
+                            <span class="input-group-text bg-light fw-bold text-muted" style="border-radius: 0 8px 8px 0 !important;">FCFA</span>
+                            <div class="invalid-feedback feedback-saas" th:errors="*{amount}"></div>
+                        </div>
+
+                        <!-- REACIVITÉ ALPINE : Affichage dynamique des frais si un montant est saisi -->
+                        <div x-show="montant > 0" x-transition class="mt-2">
+                            <span class="badge fee-badge p-2 rounded-2">
+                                <i class="bi bi-calculator me-1"></i> Estimation des frais GIM (0.5%) :
+                                <span th:text="''" x-text="(montant * tauxFrais).toFixed(0)">0</span> FCFA
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ZONE DYNAMIQUE DES COMPTES PILOTÉE PAR ALPINE.JS -->
+                <div class="row g-3 mb-4">
+
+                    <!-- Compte Débiteur : Masqué si l'opération est un DEPOT en espèces (pas de compte source) -->
+                    <div class="col-md-6" x-show="typeOp === 'VIREMENT' || typeOp === 'RETRAIT'" x-transition>
+                        <label class="form-label-saas text-danger fw-bold">Compte Débiteur (IBAN Source)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-box-arrow-up-right"></i></span>
+                            <input type="text" th:field="*{sourceDbtrAcct}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{sourceDbtrAcct}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Compte Créditeur : Masqué si l'opération est un RETRAIT en espèces (pas de compte cible) -->
+                    <div class="col-md-6" x-show="typeOp === 'VIREMENT' || typeOp === 'DEPOT'" x-transition>
+                        <label class="form-label-saas text-success fw-bold">Compte Créditeur (IBAN Destination)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-box-arrow-down-left"></i></span>
+                            <input type="text" th:field="*{destinationCdtrAcct}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{destinationCdtrAcct}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ZONE COMPLÉMENTAIRE NORME ISO 20022 (Affichée uniquement pour les Virements interbancaires) -->
+                <div class="iso-spec-box p-4 mb-4" x-show="typeOp === 'VIREMENT'" x-transition>
+                    <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-file-earmark-code me-2"></i>Métadonnées réglementaires ISO 20022 (pacs.008)</h6>
+
+                    <div class="mb-3">
+                        <label class="form-label-saas">Libellé du virement (Remittance Information)</label>
+                        <input type="text" th:field="*{description}" class="form-control form-control-saas bg-white" placeholder="Ex: Virement de salaire mensuel Août 2026">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{description}"></div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label-saas">Code Motif ISO Standard (Purpose Code)</label>
+                            <select th:field="*{purposeCode}" class="form-select form-select-saas bg-white">
+                                <option value="OTHR">OTHR - Autre transfert</option>
+                                <option value="SALA">SALA - Versement Salaire</option>
+                                <option value="PENS">PENS - Versement Pension</option>
+                                <option value="CASH">CASH - Gestion Trésorerie</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-saas">Identifiant Unique de Bout en Bout</label>
+                            <input type="text" th:field="*{endToEndId}" class="form-control form-control-saas bg-white" placeholder="Généré automatiquement par le CBS" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons de validation d'exécution de l'ordre financier -->
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                    <a th:href="@{/users}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium">
+                        Retour console
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium"
+                            th:attr="onclick='return confirm(\'Confirmer l\\\'exécution immédiate de cette opération financière ?\')'">
+                        <i class="bi bi-check-all fs-5"></i>
+                        <span>Exécuter l'Ordre</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+</body>
+</html>

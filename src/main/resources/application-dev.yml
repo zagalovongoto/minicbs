@@ -1,0 +1,9 @@
+#server
+SERVER_PORT: 8087
+
+#pg database
+POSTGRES_SQL_HOST: localhost
+POSTGRES_SQL_USERNAME: postgres
+POSTGRES_SQL_PASSWORD: Zagzagzag@99
+POSTGRES_SQL_PORT: 5432
+POSTGRES_SQL_DB: thymeleaf

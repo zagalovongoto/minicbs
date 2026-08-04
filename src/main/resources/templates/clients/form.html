@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Enregistrement KYC Client</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Dossier d'Ouverture Client (KYC)
+</th:block>
+
+<section layout:fragment="content">
+
+    <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <div>
+            <strong class="d-block">Conformité Refusée</strong>
+            <span th:text="${globalErrorMessage}" class="small text-secondary-soft">Détails...</span>
+        </div>
+    </div>
+
+    <div class="card card-saas card-form shadow-sm mx-auto">
+        <div class="card-header-form border-bottom">
+            <h4 class="fw-bold text-dark m-0"><i class="bi bi-person-check text-primary me-2"></i>Informations Titulaire</h4>
+            <p class="text-muted small m-0 mt-1">Enregistrez l'identité civile du client. Un code identifiant unique UEMOA lui sera automatiquement attribué.</p>
+        </div>
+
+        <div class="card-body p-4">
+            <form th:action="@{/clients/save}" th:object="${clientDTO}" method="post">
+                <input type="hidden" th:field="*{gestionnaireId}">
+
+                <!-- LIGNE 1 : Nom & Prénom -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Nom de famille</label>
+                        <input type="text" th:field="*{nom}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="Ex: KOFFI">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{nom}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Prénoms</label>
+                        <input type="text" th:field="*{prenom}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="Ex: Amenan Marie">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{prenom}"></div>
+                    </div>
+                </div>
+
+                <!-- LIGNE 2 : Email & Téléphone -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Adresse Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                            <input type="email" th:field="*{email}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="client@domaine.com">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{email}"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Numéro de Téléphone (Mobile)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-phone"></i></span>
+                            <input type="text" th:field="*{telephone}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: +225 01 02 03 04">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{telephone}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIGNE 3 : Adresse Physique -->
+                <div class="mb-4">
+                    <label class="form-label-saas">Adresse Résidentielle / Postale</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" th:field="*{adressePostale}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: Abidjan, Cocody Angré, Villa 45">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{adressePostale}"></div>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                    <a th:href="@{/clients}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium">
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium">
+                        <i class="bi bi-folder-plus fs-5"></i>
+                        <span>Créer le Dossier</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

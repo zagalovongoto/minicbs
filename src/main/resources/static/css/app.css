@@ -1,0 +1,337 @@
+/* ==========================================================================
+   Variables Globales & Design System - Charte Officielle GIM
+   ========================================================================== */
+:root {
+    --gimuemoa-marine: #053c78;        /* Vrai Bleu GIM */
+    --gimuemoa-marine-hover: #074e9c;  /* Bleu GIM Lumineux pour interaction */
+    --gimuemoa-marine-light: #e6f0fa;  /* Fond Pastel GIM pour contrastes doux */
+
+    --sidebar-width: 260px;
+    --primary-soft: #f0f4fd;
+    --border-color: #cbd5e1;
+    --hover-bg: #f8fafc;
+    --card-bg: #ffffff;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+    background-color: #f8fafc !important;
+}
+
+.transition-fast {
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* ==========================================================================
+   Uniformisation Automatique Globale (Surcharges Bootstrap)
+   ========================================================================== */
+.btn-primary {
+    background-color: var(--gimuemoa-marine) !important;
+    border-color: var(--gimuemoa-marine) !important;
+    color: #ffffff !important;
+    padding: 0.5rem 1.2rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--gimuemoa-marine-hover) !important;
+    border-color: var(--gimuemoa-marine-hover) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 60, 120, 0.15) !important;
+}
+
+.text-primary {
+    color: var(--gimuemoa-marine) !important;
+}
+
+.bg-primary {
+    background-color: var(--gimuemoa-marine) !important;
+}
+
+/* ==========================================================================
+   Structure du Layout Principal (Sticky Footer Fix)
+   ========================================================================== */
+.navbar {
+    height: 60px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 101;
+}
+
+.navbar-dark.bg-dark {
+    background-color: var(--gimuemoa-marine) !important;
+    border-bottom: 1px solid var(--gimuemoa-marine-hover) !important;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 60px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 1.5rem 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #e2e8f0;
+    background-color: var(--card-bg);
+}
+
+.main-wrapper {
+    margin-left: var(--sidebar-width);
+    padding-top: 60px;
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 2.5rem;
+}
+
+footer, [th\:insert*="footer"], [th\:replace*="footer"], div[th\:fragment="footer"] {
+    margin-top: auto !important;
+    width: 100%;
+}
+
+/* ==========================================================================
+   Composants de Cartes (Cards SaaS)
+   ========================================================================== */
+.card-saas {
+    border: none !important;
+    border-radius: 16px !important;
+    background-color: var(--card-bg) !important;
+}
+
+/* ==========================================================================
+   Tableaux de données (Datatables GIM SaaS & Mode Compact)
+   ========================================================================== */
+.table-saas {
+    min-width: 800px;
+}
+
+.table-saas thead {
+    background-color: #f8fafc;
+}
+
+.table-saas th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.table-saas tbody tr {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.table-saas tbody tr:last-child {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.table-saas tbody tr:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.table-saas tbody tr td {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+/* ==========================================================================
+   Boutons d'actions, Avatars & Badges (Correctifs 5.0.2)
+   ========================================================================== */
+.btn-action {
+    width: 34px;
+    height: 34px;
+}
+
+.btn-action-edit:hover {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+}
+
+.table-saas .avatar-initials {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    font-size: 0.9rem !important;
+}
+
+.avatar-initials {
+    background-color: var(--gimuemoa-marine-light) !important;
+    color: var(--gimuemoa-marine) !important;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+}
+
+.bg-success.bg-opacity-10 {
+    background-color: #dcfce7 !important;
+    color: #15803d !important;
+}
+
+.bg-danger.bg-opacity-10 {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+}
+
+.bg-secondary.bg-opacity-10 {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   Ajustement de la Sidebar & Navigation Active (Corrigé et Refermé)
+   ========================================================================== */
+.sidebar .nav-link.active {
+    color: var(--gimuemoa-marine) !important;
+    background-color: var(--gimuemoa-marine-light) !important;
+    font-weight: 700 !important;
+}
+
+.sidebar .nav-link.active i {
+    color: var(--gimuemoa-marine) !important;
+}
+
+.sidebar .collapse ul {
+    border-left: 2px solid #e2e8f0 !important;
+}
+
+.sidebar .collapse .nav-link {
+    font-size: 0.85rem !important;
+    padding-left: 1rem !important;
+    color: #64748b !important;
+}
+
+.sidebar .collapse .nav-link.text-primary.fw-bold {
+    color: var(--gimuemoa-marine) !important;
+    font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   Design System des Formulaires de Saisie (SaaS Form Modèle)
+   ========================================================================== */
+.card-form {
+    max-width: 720px;
+    background-color: var(--card-bg) !important;
+}
+
+.card-header-form {
+    padding: 1.5rem 2rem;
+    background-color: var(--card-bg);
+}
+
+.form-label-saas {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+}
+
+.form-control-saas, .form-select-saas {
+    padding: 0.6rem 0.9rem !important;
+    font-size: 0.9rem !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    color: #1e293b !important;
+}
+
+.form-control:focus, .form-select:focus,
+.form-control-saas:focus, .form-select-saas:focus {
+    border-color: var(--gimuemoa-marine) !important;
+    box-shadow: 0 0 0 3px rgba(5, 60, 120, 0.12) !important;
+}
+
+.select-multiple-saas {
+    height: 110px !important;
+}
+
+.alert-danger-saas {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #fca5a5 !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem !important;
+}
+
+.feedback-saas {
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    color: #dc2626 !important;
+    margin-top: 0.35rem;
+}
+
+.input-group-text {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px 0 0 8px !important;
+}
+
+.input-group .form-control-saas {
+    border-radius: 0 8px 8px 0 !important;
+}
+
+/* ==========================================================================
+   Harmonisation de la Pagination Active & Sécurisations HTMX
+   ========================================================================== */
+.pagination .page-item.active .page-link {
+    background-color: var(--gimuemoa-marine) !important;
+    border-color: var(--gimuemoa-marine) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.pagination .page-link {
+    color: var(--gimuemoa-marine) !important;
+    border-color: #cbd5e1 !important;
+    transition: all 0.15s ease-in-out;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--gimuemoa-marine-light) !important;
+    border-color: #cbd5e1 !important;
+}
+
+tr.htmx-swapping, tr.htmx-swapping td {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+    background-color: #fee2e2 !important;
+}
+
+.pagination.htmx-request,
+#table-container.htmx-request .pagination {
+    pointer-events: none !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* ==========================================================================
+   Guichet Bancaire - Styles Opérations Spec & ISO 20022
+   ========================================================================== */
+.card-guichet {
+    max-width: 850px;
+}
+
+.fee-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b45309;
+    background-color: #fef3c7;
+    border: 1px solid #fcd34d;
+}
+
+.iso-spec-box {
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+}

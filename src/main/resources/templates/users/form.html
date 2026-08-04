@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Formulaire Utilisateur</title>
+</head>
+<body>
+
+<!-- Titre dynamique sécurisé injecté dans le layout principal -->
+<th:block layout:fragment="page-title">
+    <span th:if="${userDTO.id == null}">Créer un compte</span>
+    <span th:unless="${userDTO.id == null}">Modifier le compte</span>
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- BLOC D'ERREUR GLOBALE -->
+    <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <div>
+            <strong class="d-block">Erreur Métier</strong>
+            <span th:text="${globalErrorMessage}" class="small text-secondary-soft">Détails...</span>
+        </div>
+    </div>
+
+    <!-- Conteneur Formulaire Style SaaS -->
+    <div class="card card-saas card-form shadow-sm mx-auto">
+        <div class="card-header-form border-bottom">
+            <h4 th:if="${userDTO.id == null}" class="fw-bold text-dark m-0">Nouvel Utilisateur</h4>
+            <h4 th:unless="${userDTO.id == null}" class="fw-bold text-dark m-0">Modifier l'Utilisateur</h4>
+            <p class="text-muted small m-0 mt-1">Renseignez les informations de connexion et assignez les profils d'habilitation.</p>
+        </div>
+
+        <div class="card-body p-4">
+            <form th:action="@{/users/save}" th:object="${userDTO}" method="post">
+                <!-- ID caché pour la modification -->
+                <input type="hidden" th:field="*{id}">
+
+                <!-- LIGNE 1 : Nom & Prénom -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Nom</label>
+                        <input type="text" th:field="*{nom}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="Ex: SOUMAHORO">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{nom}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Prénom</label>
+                        <input type="text" th:field="*{prenom}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="Ex: Jean-Marc">
+                        <div class="invalid-feedback feedback-saas" th:errors="*{prenom}"></div>
+                    </div>
+                </div>
+
+                <!-- LIGNE 2 : Adresse Email & Numéro de Téléphone -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Adresse Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                            <input type="email" th:field="*{email}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="adresse@gimuemoa.org">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{email}"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Numéro de Téléphone</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+                            <input type="text" th:field="*{telephone}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: +225 07 00 00 00">
+                            <div class="invalid-feedback feedback-saas" th:errors="*{telephone}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LIGNE 3 : Statut & Rôles -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Statut du Compte</label>
+                        <select th:field="*{statut}" class="form-select form-select-saas" th:errorclass="is-invalid">
+                            <option value="">-- Sélectionner --</option>
+                            <option th:each="st : ${allStatuts}" th:value="${st}" th:text="${st}"></option>
+                        </select>
+                        <div class="invalid-feedback feedback-saas" th:errors="*{statut}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Rôles <span class="text-muted fw-normal font-monospace" style="font-size: 0.75rem;">(CTRL + Clic)</span></label>
+                        <select th:field="*{roles}" class="form-select form-select-saas select-multiple-saas" multiple th:errorclass="is-invalid">
+                            <option th:each="rl : ${allRoles}" th:value="${rl}" th:text="${rl}"></option>
+                        </select>
+                        <div class="invalid-feedback feedback-saas" th:errors="*{roles}"></div>
+                    </div>
+                </div>
+
+                <!-- Zone Boutons d'actions -->
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top border-light-subtle mt-4">
+                    <a th:href="@{/users}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium transition-fast">
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium transition-fast">
+                        <i class="bi bi-cloud-arrow-up fs-5"></i>
+                        <span>Enregistrer</span>
+                    </button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Comptes GIM-RIB</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Comptes GIM-RIB
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Barre d'actions supérieure -->
+    <div class="card card-saas shadow-sm p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="flex-grow-1" style="max-width: 450px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" th:value="${search}"
+                           hx-get="/accounts"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#account-table-container"
+                           class="form-control form-control-saas border-start-0"
+                           placeholder="Rechercher par numéro de compte ou titulaire...">
+                </div>
+            </div>
+            <div>
+                <a th:href="@{/accounts/new}" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium">
+                    <i class="bi bi-wallet-fill fs-5"></i>
+                    <span>Ouvrir un Compte GIM</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur global du tableau (Cible HTMX) -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="account-table-container">
+
+        <!-- FRAGMENT RECHARGEABLE HTMX -->
+        <div th:fragment="account-table-content" class="w-100">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-4">Numéro de Compte UEMOA (IBAN)</th>
+                        <th class="py-3">Titulaire du Compte</th>
+                        <th class="py-3">Type</th>
+                        <th class="py-3 text-end">Solde Disponible</th>
+                        <th class="py-3">Statut</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${accounts}" class="transition-fast">
+                        <!-- Numéro de compte avec mise en valeur monospace -->
+                        <td class="py-3 px-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-credit-card-2-front text-primary fs-5"></i>
+                                <span class="font-monospace fw-bold text-dark tracking-wide" th:text="${a.accountNumber}">CI00000...</span>
+                            </div>
+                        </td>
+                        <!-- Titulaire -->
+                        <td class="py-3">
+                            <div class="fw-semibold text-secondary" th:text="${a.clientNomComplet}">Nom du client</div>
+                        </td>
+                        <!-- Type (badge coloré) -->
+                        <td class="py-3">
+                                <span class="badge rounded-2 px-2 py-1.5 small"
+                                      th:classappend="${a.type == 'COURANT'} ? 'bg-info bg-opacity-10 text-info' : 'bg-warning bg-opacity-10 text-warning'"
+                                      th:text="${a.type}">COURANT</span>
+                        </td>
+                        <!-- Solde formaté financièrement -->
+                        <td class="py-3 text-end fw-bold text-dark fs-6 pe-4">
+                            <span th:text="${#numbers.formatDecimal(a.balance, 1, 'WHITESPACE', 0, 'POINT')}">0</span>
+                            <small class="text-muted fw-normal" th:text="${a.currency}">XOF</small>
+                        </td>
+                        <!-- Statut -->
+                        <td class="py-3">
+                                <span th:if="${a.status == 'ACTIF'}" class="badge px-2.5 py-1.5 rounded-pill fw-semibold text-success bg-success bg-opacity-10" style="font-size: 0.75rem;">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Actif
+                                </span>
+                            <span th:if="${a.status != 'ACTIF'}" class="badge px-2.5 py-1.5 rounded-pill fw-semibold text-danger bg-danger bg-opacity-10" style="font-size: 0.75rem;">
+                                    <i class="bi bi-dash-circle-fill me-1"></i> Bloqué
+                                </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(accounts)}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-wallet2 text-secondary opacity-50 display-6 d-block mb-2"></i>
+                            <span class="fw-medium">Aucun compte bancaire actif dans le grand livre.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

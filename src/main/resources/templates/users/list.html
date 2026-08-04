@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Gestion des utilisateurs</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Gestion des utilisateurs
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Barre d'actions supérieure avec Barre de recherche instantanée HTMX -->
+    <div class="card card-saas shadow-sm p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="flex-grow-1" style="max-width: 450px;">
+                <!-- INPUT DE RECHERCHE DYNAMIQUE HTMX -->
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" th:value="${search}"
+                           hx-get="/users"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#table-container"
+                           class="form-control form-control-saas border-start-0"
+                           placeholder="Rechercher par nom, prénom ou email...">
+                </div>
+            </div>
+            <div>
+                <a th:href="@{/users/new}" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium transition-fast">
+                    <i class="bi bi-person-plus fs-5"></i>
+                    <span>Ajouter un utilisateur</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur global du tableau (Cible des rafraîchissements HTMX) -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="table-container">
+
+        <!-- DÉBUT DU FRAGMENT RECHARGEABLE HTMX -->
+        <div th:fragment="table-content" class="w-100">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <!-- TRI : Liens cliquables pour trier par colonne -->
+                        <th class="py-3 px-4" style="cursor: pointer;"
+                            th:hx-get="@{/users(search=${search}, page=${currentPageNumber}, sortBy='nom', direction=${sortBy == 'nom' && direction == 'asc' ? 'desc' : 'asc'})}"
+                            hx-target="#table-container">
+                            Identité / Contact
+                            <i th:if="${sortBy == 'nom'}" th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                        </th>
+                        <th class="py-3" style="cursor: pointer;"
+                            th:hx-get="@{/users(search=${search}, page=${currentPageNumber}, sortBy='email', direction=${sortBy == 'email' && direction == 'asc' ? 'desc' : 'asc'})}"
+                            hx-target="#table-container">
+                            Email
+                            <i th:if="${sortBy == 'email'}" th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                        </th>
+                        <th class="py-3">Statut</th>
+                        <th class="py-3">Rôles assignés</th>
+                        <th class="py-3 text-end px-4">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="u : ${users}" th:id="'user-row-' + ${u.id}" class="transition-fast">
+                        <!-- Identité -->
+                        <td class="py-3 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center text-primary fw-bold avatar-initials">
+                                    <span th:if="${u.photo == null}" th:text="${#strings.substring(u.prenom,0,1).toUpperCase()}">U</span>
+                                    <img th:if="${u.photo != null}" th:src="${u.photo}" alt="Avatar" class="rounded-circle w-100 h-100 object-fit-cover">
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${u.nom.toUpperCase() + ' ' + u.prenom}">NOM Prénom</div>
+                                    <small class="text-muted d-block" style="font-size: 0.8rem;">
+                                        <i class="bi bi-telephone text-secondary me-1"></i>
+                                        <span th:text="${u.telephone != null && !u.telephone.isEmpty()} ? ${u.telephone} : 'Aucun numéro'">0000</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Email -->
+                        <td class="py-3"><span class="text-secondary fw-medium" th:text="${u.email}">email</span></td>
+
+                        <!-- Statut -->
+                        <td class="py-3">
+                                <span th:if="${u.statut == 'ACTIF'}" class="badge px-2.5 py-1.5 rounded-pill fw-semibold text-success bg-success bg-opacity-10" style="font-size: 0.75rem;">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Actif
+                                </span>
+                            <span th:if="${u.statut != 'ACTIF'}" class="badge px-2.5 py-1.5 rounded-pill fw-semibold text-danger bg-danger bg-opacity-10" style="font-size: 0.75rem;">
+                                    <i class="bi bi-x-circle-fill me-1"></i> Inactif
+                                </span>
+                        </td>
+
+                        <!-- Rôles -->
+                        <td class="py-3">
+                            <div class="d-flex flex-wrap gap-1">
+                                <span th:each="r : ${u.roles}" th:text="${r}" class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10 px-2 py-1 rounded">ROLE</span>
+                            </div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-3 text-end px-4">
+                            <div class="d-inline-flex gap-2">
+                                <a th:href="@{/users/edit/{id}(id=${u.id})}" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center p-2 rounded-3 btn-action btn-action-edit transition-fast"><i class="bi bi-pencil-square fs-6"></i></a>
+                                <button th:hx-delete="|/users/delete/${u.id}|" th:hx-target="|#user-row-${u.id}|" hx-swap="outerHTML swap:400ms" hx-confirm="Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?" class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center p-2 rounded-3 btn-action transition-fast"><i class="bi bi-trash3 fs-6"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-people text-secondary opacity-50 display-6 d-block mb-2"></i>
+                            <span class="fw-medium">Aucun utilisateur trouvé.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- BLOC PAGINATION STYLE SAAS CORRIGÉ ET COMPLET -->
+            <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-50">
+                <div class="small text-muted">
+                    Affichage de la page <span class="fw-semibold" th:text="${currentPageNumber + 1}">1</span> sur <span class="fw-semibold" th:text="${totalPages}">1</span> (<span th:text="${totalElements}">0</span> utilisateurs au total)
+                </div>
+
+                <nav aria-label="Pagination">
+                    <!-- Ajout de hx-sync="this:replace" pour annuler proprement les requêtes en cas de clics ultra-rapides -->
+                    <ul class="pagination pagination-sm m-0 gap-1" hx-sync="this:replace">
+
+                        <!-- Bouton Précédent -->
+                        <li class="page-item" th:classappend="${currentPageNumber == 0} ? 'disabled'">
+                            <button class="page-link rounded-2"
+                                    th:disabled="${currentPageNumber == 0}"
+                                    th:hx-get="@{/users(search=${search}, page=${currentPageNumber - 1}, sortBy=${sortBy}, direction=${direction})}"
+                                    hx-target="#table-container">Précédent</button>
+                        </li>
+
+                        <!-- Numéros de pages -->
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPageNumber == i} ? 'active'">
+                            <button class="page-link rounded-2"
+                                    th:disabled="${currentPageNumber == i}"
+                                    th:hx-get="@{/users(search=${search}, page=${i}, sortBy=${sortBy}, direction=${direction})}"
+                                    hx-target="#table-container" th:text="${i + 1}">1</button>
+                        </li>
+
+                        <!-- Bouton Suivant -->
+                        <li class="page-item" th:classappend="${currentPageNumber == totalPages - 1} ? 'disabled'">
+                            <!-- hx-swap="outerHTML" a été SUPPRIMÉ pour rester en harmonie (innerHTML par défaut) -->
+                            <button class="page-link rounded-2"
+                                    th:disabled="${currentPageNumber == totalPages - 1}"
+                                    th:hx-get="@{/users(search=${search}, page=${currentPageNumber + 1}, sortBy=${sortBy}, direction=${direction})}"
+                                    hx-target="#table-container">
+                                Suivant
+                            </button>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+
+
+        </div>
+        <!-- FIN DU FRAGMENT RECHARGEABLE HTMX -->
+
+    </div>
+
+</section>
+
+</body>
+</html>

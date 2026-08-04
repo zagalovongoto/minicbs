@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Ouverture de Compte GIM</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Ouverture de Compte Épargne / Courant
+</th:block>
+
+<section layout:fragment="content">
+
+    <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <div>
+            <strong class="d-block">Ouverture Rejetée</strong>
+            <span th:text="${globalErrorMessage}" class="small text-secondary-soft">Détails...</span>
+        </div>
+    </div>
+
+    <div class="card card-saas card-form shadow-sm mx-auto">
+        <div class="card-header-form border-bottom">
+            <h4 class="fw-bold text-dark m-0"><i class="bi bi-wallet2 text-primary me-2"></i>Nouveau Compte GIM-UEMOA</h4>
+            <p class="text-muted small m-0 mt-1">Sélectionnez le titulaire certifié KYC et fixez le dépôt initial obligatoire pour l'activation.</p>
+        </div>
+
+        <div class="card-body p-4">
+            <form th:action="@{/accounts/save}" th:object="${accountDTO}" method="post">
+                <input type="hidden" th:field="*{currency}">
+
+                <!-- LIGNE 1 : Sélection du Client Titulaire -->
+                <div class="mb-4">
+                    <label class="form-label-saas">Titulaire du Compte (Client Certifié KYC)</label>
+                    <select th:field="*{clientId}" class="form-select form-select-saas" th:errorclass="is-invalid">
+                        <option value="">-- Choisir le bénéficiaire du compte --</option>
+                        <option th:each="c : ${clientsList}" th:value="${c.id}" th:text="|${c.codeClient} - ${c.nom.toUpperCase()} ${c.prenom}|"></option>
+                    </select>
+                    <div class="invalid-feedback feedback-saas" th:errors="*{clientId}"></div>
+                </div>
+
+                <!-- LIGNE 2 : Type de compte & Dépôt initial -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Type de Produit Bancaire</label>
+                        <select th:field="*{type}" class="form-select form-select-saas" th:errorclass="is-invalid">
+                            <option value="">-- Sélectionner le produit --</option>
+                            <option th:each="t : ${allTypes}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                        <div class="invalid-feedback feedback-saas" th:errors="*{type}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-saas">Versement Initial Obligatoire (FCFA)</label>
+                        <div class="input-group">
+                            <input type="number" th:field="*{balance}" class="form-control form-control-saas" th:errorclass="is-invalid" placeholder="0">
+                            <span class="input-group-text bg-light fw-bold text-muted" style="border-radius: 0 8px 8px 0 !important;">XOF</span>
+                            <div class="invalid-feedback feedback-saas" th:errors="*{balance}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                    <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium">
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium">
+                        <i class="bi bi-shield-check fs-5"></i>
+                        <span>Générer le RIB & Activer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

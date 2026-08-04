@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Portefeuille Clients</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Portefeuille Clients
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Barre d'actions supérieure avec recherche HTMX -->
+    <div class="card card-saas shadow-sm p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="flex-grow-1" style="max-width: 450px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="search" name="search" th:value="${search}"
+                           hx-get="/clients"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#client-table-container"
+                           class="form-control form-control-saas border-start-0"
+                           placeholder="Rechercher par nom, prénom ou code client...">
+                </div>
+            </div>
+            <div>
+                <a th:href="@{/clients/new}" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium">
+                    <i class="bi bi-person-plus fs-5"></i>
+                    <span>Enregistrer un Client</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur global du tableau (Cible HTMX) -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="client-table-container">
+
+        <!-- FRAGMENT RECHARGEABLE HTMX -->
+        <div th:fragment="client-table-content" class="w-100">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-4">Code / Identité</th>
+                        <th class="py-3">Contact Email</th>
+                        <th class="py-3">Téléphone</th>
+                        <th class="py-3">Gestionnaire Assigné</th>
+                        <th class="py-3 text-end px-4">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${clients}" class="transition-fast">
+                        <td class="py-3 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 p-2 bg-light text-secondary fw-bold font-monospace small border">
+                                    <span th:text="${c.codeClient}">CLT-0000</span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" th:text="${c.nom.toUpperCase() + ' ' + c.prenom}">NOM Prénom</div>
+
+                                    <!-- SÉCURISATION DE L'ADRESSE : th:if et th:unless éliminent l'erreur de String -->
+                                    <small class="text-muted d-block"
+                                           th:if="${c.adressePostale != null && !c.adressePostale.isEmpty()}"
+                                           th:text="${c.adressePostale}">
+                                        Adresse existante
+                                    </small>
+                                    <small class="text-muted d-block"
+                                           th:unless="${c.adressePostale != null && !c.adressePostale.isEmpty()}">
+                                        Pas d'adresse renseignée
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="py-3"><span class="text-secondary fw-medium" th:text="${c.email}">email</span></td>
+                        <td class="py-3"><span class="text-secondary" th:text="${c.telephone}">0000</span></td>
+                        <!-- REMPLACEMENT SÉCURISÉ CONTRE LES VALEURS NULL -->
+                        <td class="py-3">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10 px-2.5 py-1.5 rounded">
+                                <i class="bi bi-briefcase me-1"></i>
+                                <!-- Si gestionnaireNomComplet est null, il affichera automatiquement 'Non assigné' sans planter -->
+                                <span th:text="${c.gestionnaireNomComplet != null} ? ${c.gestionnaireNomComplet} : 'Non assigné'">Admin</span>
+                            </span>
+                        </td>
+
+                        <td class="py-3 text-end px-4">
+                            <div class="d-inline-flex gap-2">
+                                <!-- Permettra d'ouvrir son dossier financier -->
+                                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center p-2 rounded-3 btn-action" title="Voir les comptes du client">
+                                    <i class="bi bi-wallet2 fs-6"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(clients)}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-bounding-box text-secondary opacity-50 display-6 d-block mb-2"></i>
+                            <span class="fw-medium">Aucun client enregistré dans le portefeuille.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-50">
+                <div class="small text-muted">
+                    Page <span class="fw-semibold" th:text="${currentPageNumber + 1}">1</span> sur <span class="fw-semibold" th:text="${totalPages}">1</span> (<span th:text="${totalElements}">0</span> clients)
+                </div>
+                <nav aria-label="Pagination">
+                    <ul class="pagination pagination-sm m-0 gap-1" hx-sync="this:replace">
+                        <li class="page-item" th:classappend="${currentPageNumber == 0} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == 0}" th:hx-get="@{/clients(search=${search}, page=${currentPageNumber - 1})}" hx-target="#client-table-container">Précédent</button>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPageNumber == i} ? 'active'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == i}" th:hx-get="@{/clients(search=${search}, page=${i})}" hx-target="#client-table-container" th:text="${i + 1}">1</button>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPageNumber == totalPages - 1} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == totalPages - 1}" th:hx-get="@{/clients(search=${search}, page=${currentPageNumber + 1})}" hx-target="#client-table-container">Suivant</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

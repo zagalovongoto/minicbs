@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: test-spring4
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_SQL_HOST}:${POSTGRES_SQL_PORT}/${POSTGRES_SQL_DB}
+    username: ${POSTGRES_SQL_USERNAME}
+    password: ${POSTGRES_SQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+  thymeleaf:
+    cache: false # Désactive le cache Thymeleaf (Correctement placé)
+
+  devtools: # Sorti du bloc thymeleaf, aligné directement sous spring
+    restart:
+      enabled: true
+
+server:
+  port: 8087
+  error:
+    include-message: never
+
