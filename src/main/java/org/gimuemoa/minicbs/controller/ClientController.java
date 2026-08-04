@@ -75,4 +75,17 @@ public class ClientController {
             return "clients/form";
         }
     }
+
+    @GetMapping("/search-mini")
+    public String searchMiniClients(
+            @RequestParam(value = "q", required = false, defaultValue = "") String query,
+            Model model) {
+
+        // On réutilise votre service existant pour chercher les 5 meilleurs résultats
+        Page<ClientDTO> clientPage = clientService.getPaginatedClients(query, 0, 5);
+        model.addAttribute("suggestions", clientPage.getContent());
+
+        return "accounts/form :: clients-suggestions"; // Renvoie uniquement le fragment de suggestions
+    }
+
 }

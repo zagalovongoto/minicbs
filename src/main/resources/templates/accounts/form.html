@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr"
-      xmlns:th="http://thymeleaf.org"
+      xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://ultraq.net.nz"
       layout:decorate="~{layouts/main}">
 <head>
@@ -14,6 +14,7 @@
 
 <section layout:fragment="content">
 
+    <!-- Bloc d'erreur globale métier -->
     <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">
         <i class="bi bi-exclamation-triangle-fill fs-5"></i>
         <div>
@@ -30,19 +31,75 @@
 
         <div class="card-body p-4">
             <form th:action="@{/accounts/save}" th:object="${accountDTO}" method="post">
-                <input type="hidden" th:field="*{currency}">
 
-                <!-- LIGNE 1 : Sélection du Client Titulaire -->
-                <div class="mb-4">
-                    <label class="form-label-saas">Titulaire du Compte (Client Certifié KYC)</label>
-                    <select th:field="*{clientId}" class="form-select form-select-saas" th:errorclass="is-invalid">
-                        <option value="">-- Choisir le bénéficiaire du compte --</option>
-                        <option th:each="c : ${clientsList}" th:value="${c.id}" th:text="|${c.codeClient} - ${c.nom.toUpperCase()} ${c.prenom}|"></option>
-                    </select>
-                    <div class="invalid-feedback feedback-saas" th:errors="*{clientId}"></div>
+                <!-- SÉCURISATION DES VALEURS PAR DÉFAUT : Envoyées explicitement pour satisfaire Jakarta Validation -->
+                <input type="hidden" name="currency" value="XOF">
+                <input type="hidden" name="status" value="ACTIF">
+
+                <!-- RECHERCHE PRÉDICTIVE DE CLIENT -->
+                <div class="mb-4" x-data="{ selectedClient: '', showDropdown: false }">
+                    <label class="form-label-saas">Titulaire du Compte (Recherche par Nom ou Code KYC)</label>
+
+                    <!-- ID Caché envoyé à Spring lors de la soumission -->
+                    <input type="hidden" th:field="*{clientId}" id="hidden-client-id">
+
+                    <div class="position-relative">
+                        <!-- Champ de recherche HTMX -->
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person-search"></i></span>
+                            <input type="text" class="form-control form-control-saas border-start-0 bg-white"
+                                   placeholder="Saisissez les premières lettres du nom ou du code..."
+                                   name="q"
+                                   autocomplete="off"
+                                   x-model="selectedClient"
+                                   @input="showDropdown = true"
+                                   @click.away="showDropdown = false"
+                                   hx-get="/clients/search-mini"
+                                   hx-trigger="input changed delay:300ms"
+                                   hx-target="#suggestions-box">
+                        </div>
+
+                        <!-- Boîte de suggestions dynamique alimentée par HTMX et contrôlée par Alpine -->
+                        <div id="suggestions-box"
+                             x-show="showDropdown"
+                             class="position-absolute w-100 bg-white shadow rounded-3 border mt-1 z-3"
+                             style="display: none; max-height: 250px; overflow-y: auto;">
+
+                            <!-- FRAGMENT RENVOYÉ PAR SPRING BOOT -->
+                            <div th:fragment="clients-suggestions" class="list-group list-group-flush p-1">
+                                <a href="javascript:void(0)"
+                                   th:each="c : ${suggestions}"
+                                   th:data-id="${c.id}"
+                                   th:data-label="|${c.codeClient} - ${c.nom.toUpperCase()} ${c.prenom}|"
+                                   class="list-group-item list-group-item-action border-0 rounded-2 small d-flex justify-content-between align-items-center py-2"
+                                   style="cursor: pointer;"
+                                   @click="
+                                        document.getElementById('hidden-client-id').value = $el.getAttribute('data-id');
+                                        selectedClient = $el.getAttribute('data-label');
+                                        showDropdown = false;
+                                   ">
+                                    <div>
+                                        <i class="bi bi-person me-2 text-primary"></i>
+                                        <span class="fw-bold text-dark" th:text="|${c.nom.toUpperCase()} ${c.prenom}|">Nom</span>
+                                    </div>
+                                    <span class="badge bg-light text-secondary border font-monospace" th:text="${c.codeClient}">CLT-0000</span>
+                                </a>
+
+                                <!-- Message si aucun client trouvé -->
+                                <div th:if="${#lists.isEmpty(suggestions)}" class="text-center py-3 text-muted small">
+                                    <i class="bi bi-exclamation-circle me-1"></i> Aucun client certifié KYC ne correspond.
+                                </div>
+                            </div>
+                            <!-- FIN DU FRAGMENT -->
+
+                        </div>
+
+                    </div>
+                    <!-- Zone d'erreur pour le client -->
+                    <div class="text-danger small mt-2 fw-medium" th:if="${#fields.hasErrors('clientId')}" th:errors="*{clientId}"></div>
                 </div>
 
-                <!-- LIGNE 2 : Type de compte & Dépôt initial -->
+                <!-- LIGNES PRODUITS ET SOLDE -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label-saas">Type de Produit Bancaire</label>
@@ -62,7 +119,7 @@
                     </div>
                 </div>
 
-                <!-- Boutons -->
+                <!-- Boutons de soumission -->
                 <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
                     <a th:href="@{/accounts}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium">
                         Annuler

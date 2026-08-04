@@ -2,9 +2,9 @@
    Variables Globales & Design System - Charte Officielle GIM
    ========================================================================== */
 :root {
-    --gimuemoa-marine: #053c78;        /* Vrai Bleu GIM */
-    --gimuemoa-marine-hover: #074e9c;  /* Bleu GIM Lumineux pour interaction */
-    --gimuemoa-marine-light: #e6f0fa;  /* Fond Pastel GIM pour contrastes doux */
+    --gimuemoa-marine: #053c78;
+    --gimuemoa-marine-hover: #074e9c;
+    --gimuemoa-marine-light: #e6f0fa;
 
     --sidebar-width: 260px;
     --primary-soft: #f0f4fd;
@@ -13,10 +13,19 @@
     --card-bg: #ffffff;
 }
 
+/* CORRECTIF ABSOLU HAUTEUR : Obligatoire pour le Sticky Footer */
+html, body {
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     letter-spacing: -0.01em;
     background-color: #f8fafc !important;
+    display: flex;
+    flex-direction: column; /* Force le body à gérer sa structure en colonne */
 }
 
 .transition-fast {
@@ -54,7 +63,7 @@ body {
 }
 
 /* ==========================================================================
-   Structure du Layout Principal (Sticky Footer Fix)
+   Structure du Layout Principal (Sticky Footer Fix Définitif)
    ========================================================================== */
 .navbar {
     height: 60px;
@@ -84,23 +93,28 @@ body {
     background-color: var(--card-bg);
 }
 
+/* Le wrapper occupe désormais dynamiquement tout l'espace vertical disponible */
 .main-wrapper {
     margin-left: var(--sidebar-width);
     padding-top: 60px;
     min-height: calc(100vh - 60px);
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 1; /* S'étend pour pousser le footer si l'écran est vide */
 }
 
 .content-area {
-    flex-grow: 1;
+    flex-grow: 1 !important; /* Devient un élastique vertical */
     padding: 2.5rem;
 }
 
-footer, [th\:insert*="footer"], [th\:replace*="footer"], div[th\:fragment="footer"] {
-    margin-top: auto !important;
-    width: 100%;
+/* Verrouillage du pied de page tout en bas du wrapper */
+.main-wrapper > footer {
+    margin-top: auto !important; /* Pousse vers le bas de l'écran */
+    flex-shrink: 0;
+    background-color: #ffffff !important;
 }
+
 
 /* ==========================================================================
    Composants de Cartes (Cards SaaS)
@@ -335,3 +349,22 @@ tr.htmx-swapping, tr.htmx-swapping td {
     border: 1px dashed #cbd5e1;
     border-radius: 12px;
 }
+
+/* ==========================================================================
+   Correctif de visibilité pour le Badge ÉPARGNE (Bootstrap 5.0.2)
+   ========================================================================== */
+
+/* Fix pour le badge de type ÉPARGNE */
+.table-saas .bg-warning.bg-opacity-10 {
+    background-color: #fef3c7 !important; /* Fond jaune/orange pastel opaque */
+    color: #b45309 !important;            /* Texte ambre foncé ultra-lisible */
+    font-weight: 600 !important;
+}
+
+/* Par souci d'harmonie, on sécurise aussi le badge de type COURANT */
+.table-saas .bg-info.bg-opacity-10 {
+    background-color: #e0f2fe !important; /* Fond bleu azur pastel opaque */
+    color: #0369a1 !important;            /* Texte bleu foncé lisible */
+    font-weight: 600 !important;
+}
+
