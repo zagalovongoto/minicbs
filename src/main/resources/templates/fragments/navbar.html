@@ -1,20 +1,27 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://thymeleaf.org"
+      xmlns:sec="http://thymeleaf.org/extras/spring-security">
 <body>
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary border-opacity-10 shadow-sm">
     <div class="container-fluid px-4">
 
+        <!-- GAUCHE SANCTUARISÉ : NOM ET LOGO DE L'APPLICATION -->
+        <!-- LOGO ET NOM DE MARQUE DE L'APPLICATION MIS À JOUR -->
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
             <div class="bg-primary bg-gradient p-2 rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
                 <i class="bi bi-grid-1x2-fill text-white fs-6"></i>
             </div>
-            <span class="tracking-tight text-white fs-5">Admin<span class="text-primary fw-light">Portal</span></span>
+            <span class="tracking-tight text-white fs-5 fw-bold">
+                Mini <span class="text-white-50 fw-light">CBS</span>
+            </span>
         </a>
+
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!-- DROITE : NOTIFICATIONS ET PROFIL UTILISATEUR -->
         <div class="ms-auto d-flex align-items-center gap-2">
             <!-- Cloche notifications stylisée -->
             <button class="btn btn-icon btn-link text-white-50 position-relative p-2 hover:text-white transition">
@@ -22,32 +29,53 @@
                 <span class="position-absolute top-2 start-3 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
             </button>
 
-            <!-- Profil utilisateur avec Dropdown haut de gamme -->
+            <!-- Profil utilisateur avec Dropdown haut de gamme & Déconnexion Intégrée -->
             <div class="dropdown">
+                <!-- Formulaire caché pour le logout sécurisé -->
+                <form th:action="@{/logout}" method="post" id="navbarLogoutForm" class="d-none"></form>
+
                 <a class="d-flex align-items-center gap-2 text-white-50 text-decoration-none dropdown-toggle px-3 py-1.5 rounded-3 hover:bg-white hover:bg-opacity-10 transition"
                    href="#" data-bs-toggle="dropdown">
                     <i class="bi bi-person-circle fs-5 text-white"></i>
-                    <span class="d-none d-sm-inline text-white small fw-medium">Administrateur</span>
+
+                    <!-- AFFICHAGE DYNAMIQUE DU USERNAME (EMAIL) SUR LE BOUTON DU DROPDOWN -->
+                    <span class="d-none d-sm-inline text-white small fw-medium"
+                          sec:authentication="name">admin@gimminicbs.org</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="border-radius: 12px; min-width: 200px;">
+
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="border-radius: 12px; min-width: 220px;">
+                    <!-- EN-TÊTE DE BIENVENUE COMPATIBLE ET SÉCURISÉ CONTRE LES ERREURS DE LIEN -->
+                    <li class="px-3 py-2 border-bottom mb-1 bg-light bg-opacity-25 rounded-3">
+                        <span class="text-muted d-block souligner-soft" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Session active</span>
+                        <!-- Utilisation de la syntaxe SpEL sécurisée : Évite le plantage si l'objet n'est pas encore CustomUserDetails -->
+                        <span class="fw-bold text-dark small"
+                              th:text="${#authentication.principal instanceof T(org.gimuemoa.minicbs.security.CustomUserDetails)} ? ${#authentication.principal.nomComplet} : ${#authentication.name}">
+                            Gestionnaire CBS
+                        </span>
+                    </li>
+
                     <li>
-                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2" href="#">
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 small" href="#">
                             <i class="bi bi-person text-muted"></i> Mon profil
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2" href="#">
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 small" href="#">
                             <i class="bi bi-gear text-muted"></i> Paramètres
                         </a>
                     </li>
                     <li><hr class="dropdown-divider opacity-50"></li>
                     <li>
-                        <a class="dropdown-item text-danger rounded-3 d-flex align-items-center gap-2 py-2" href="#">
+                        <!-- Lien de Déconnexion -->
+                        <a class="dropdown-item text-danger rounded-3 d-flex align-items-center gap-2 py-2 small"
+                           href="javascript:void(0)"
+                           onclick="document.getElementById('navbarLogoutForm').submit();">
                             <i class="bi bi-box-arrow-right"></i> Déconnexion
                         </a>
                     </li>
                 </ul>
             </div>
+
         </div>
 
     </div>

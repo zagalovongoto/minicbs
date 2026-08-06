@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Securisée - GIM Mini CBS</title>
+
+    <!-- Pre-chargement de la police Inter -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body class="bg-white m-0 p-0" style="height: 100vh; overflow: hidden;">
+
+<div class="container-fluid p-0">
+    <div class="auth-wrapper row g-0">
+
+        <!-- PANNEAU GAUCHE : BANNIÈRE INSTITUTIONNELLE GIM -->
+        <div class="auth-side-banner col-lg-5 d-none d-lg-flex">
+            <div class="gim-wave-pattern"></div>
+
+            <!-- Haut de la bannière -->
+            <div class="d-flex align-items-center gap-2">
+                <div class="bg-white bg-opacity-10 p-2 rounded-3 border border-white border-opacity-10 shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-grid-1x2-fill text-white fs-6"></i>
+                </div>
+                <span class="fw-bold tracking-tight text-white fs-5 m-0">GIM <span class="fw-light opacity-70">Mini CBS</span></span>
+            </div>
+
+            <!-- Centre de la bannière : Message d'accueil fort -->
+            <div class="my-auto" style="max-width: 380px; z-index: 2;">
+                <div class="compliance-pill mb-3">
+                    <i class="bi bi-shield-fill-check"></i>
+                    <span>CONFORME BCEAO / GIM-UEMOA</span>
+                </div>
+                <h1 class="fw-extrabold text-white mb-3" style="font-size: 2.25rem; letter-spacing: -0.02em; line-height: 1.2;">
+                    La passerelle Core Banking de nouvelle génération.
+                </h1>
+                <p class="text-white text-opacity-70 leading-relaxed m-0" style="font-size: 0.95rem;">
+                    Connectez-vous à la console d'administration souveraine pour piloter la compensation interbancaire, le KYC clientèle et le grand livre en temps réel.
+                </p>
+            </div>
+
+            <!-- Bas de la bannière -->
+            <div class="d-flex justify-content-between align-items-center text-white text-opacity-40 small border-top border-white border-opacity-10 pt-3" style="z-index: 2;">
+                <span>Systeme Central Securise</span>
+                <span class="font-monospace" style="font-size: 0.75rem;">ISO 20022 PACS v1.0</span>
+            </div>
+        </div>
+
+        <!-- PANNEAU DROIT : FORMULAIRE DE CONNEXION ÉPURÉ (SAAS STYLE) -->
+        <div class="auth-form-container col-lg-7 col-12">
+            <div class="auth-form-card p-2">
+
+                <!-- En-tête mobile uniquement / Logo de rappel -->
+                <div class="text-center text-lg-start mb-4">
+                    <div class="d-lg-none bg-primary bg-gradient p-2.5 rounded-3 d-inline-flex align-items-center justify-content-center shadow-sm mb-3" style="width: 44px; height: 44px;">
+                        <i class="bi bi-shield-lock-fill text-white fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark m-0">Connexion Console</h3>
+                    <p class="text-muted small m-0 mt-1">Saisissez vos habilitations de sécurité pour ouvrir la session.</p>
+                </div>
+
+                <!-- ALERTE : Échec d'authentification -->
+                <div th:if="${loginError}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4 p-3 rounded-3 shadow-sm border-0">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong class="d-block">Refus d'accès</strong>
+                        <span th:text="${loginError}">Identifiants incorrects ou compte inactif.</span>
+                    </div>
+                </div>
+
+                <!-- ALERTE : Confirmation de déconnexion -->
+                <div th:if="${logoutMessage}" class="alert d-flex align-items-center gap-2 mb-4 p-3 rounded-3 shadow-sm border-0 bg-success bg-opacity-10 text-success fw-medium small">
+                    <i class="bi bi-check-circle-fill fs-5 flex-shrink-0"></i>
+                    <span th:text="${logoutMessage}">Session clôturée proprement.</span>
+                </div>
+
+                <!-- FORMULAIRE COMPATIBLE DIRECTEMENT AVEC CONFIGURATION SPRING -->
+                <form th:action="@{/login}" method="post">
+
+                    <!-- Champ Identifiant Email -->
+                    <div class="mb-3.5">
+                        <label class="form-label-saas">Identifiant Professionnel (Email)</label>
+                        <div class="input-group">
+                            <span class="input-group-text auth-input-icon"><i class="bi bi-envelope-fill"></i></span>
+                            <input type="email" name="email" class="form-control form-control-saas border-start-0 ps-1"
+                                   placeholder="nom.prenom@gimminicbs.org" required autocomplete="email" autofocus>
+                        </div>
+                    </div>
+
+                    <!-- Champ Clé Secrète (Password) -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label-saas m-0">Clé Secrète (Mot de passe)</label>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text auth-input-icon"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" name="password" class="form-control form-control-saas border-start-0 ps-1"
+                                   placeholder="••••••••••••" required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <!-- Bouton Soumission souverain -->
+                    <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow d-flex align-items-center justify-content-center gap-2 rounded-3 transition-fast" style="font-size: 0.95rem;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>S'authentifier de manière sécurisée</span>
+                    </button>
+
+                </form>
+
+                <!-- Zone de secours bas de page -->
+                <div class="text-center mt-4 pt-3 border-top border-light-subtle">
+                    <p class="text-muted small m-0">
+                        <i class="bi bi-info-circle-fill me-1 text-primary"></i> Un problème d'accès ? Contactez le RSSI de la zone de compensation.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

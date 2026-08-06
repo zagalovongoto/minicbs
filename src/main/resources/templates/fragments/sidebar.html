@@ -138,7 +138,7 @@
     </div>
 
     <!-- Pied de la Sidebar -->
-    <div class="pt-3 border-top border-light-subtle">
+    <!--div class="pt-3 border-top border-light-subtle">
         <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary hover:bg-light hover:text-dark transition mb-1" href="#">
             <i class="bi bi-person-circle fs-5"></i>
             <span>Mon Profil</span>
@@ -147,7 +147,20 @@
             <i class="bi bi-box-arrow-right fs-5"></i>
             <span>Déconnexion</span>
         </a>
+    </div-->
+    <!-- PIED SIDEBAR : FORMULAIRE DE DÉCONNEXION SÉCURISÉ AVEC JETON CSRF -->
+    <div class="pt-3 border-top border-light-subtle">
+        <!-- Le formulaire utilise désormais th:action qui injecte AUTOMATIQUEMENT le jeton CSRF caché -->
+        <form th:action="@{/logout}" method="post" id="logoutForm" class="d-none"></form>
+
+        <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-danger hover:bg-danger hover:bg-opacity-10 transition"
+           href="javascript:void(0)"
+           onclick="document.getElementById('logoutForm').submit();">
+            <i class="bi bi-box-arrow-right fs-5"></i>
+            <span>Déconnexion</span>
+        </a>
     </div>
+
 
 </div>
 </body>

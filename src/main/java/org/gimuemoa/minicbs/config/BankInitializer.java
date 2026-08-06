@@ -9,6 +9,8 @@ import org.gimuemoa.minicbs.model.enums.EnumRole;
 import org.gimuemoa.minicbs.model.enums.EnumStatut;
 import org.gimuemoa.minicbs.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class BankInitializer implements CommandLineRunner {
     private final AppRoleRepository roleRepository; // Injection du repository des rôles
     private final ClientRepository clientRepository;
     private final BankAccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -58,7 +61,6 @@ public class BankInitializer implements CommandLineRunner {
         // 3. Amorçage du Super Administrateur souverain et liaison de son rôle
         if (userRepository.count() == 0) {
             BankInitProperties.AdminUser adminCfg = initProperties.getAdmin();
-
             // Récupération du rôle SUPER_ADMIN créé juste au-dessus
             AppRole superAdminRole = roleRepository.findByRoleName(EnumRole.ROLE_SUPER_ADMIN)
                     .orElseThrow(() -> new IllegalStateException("Erreur critique : Le rôle ROLE_SUPER_ADMIN n'a pas été initialisé."));
@@ -69,7 +71,7 @@ public class BankInitializer implements CommandLineRunner {
                     .email(adminCfg.getEmail())
                     .telephone(adminCfg.getTelephone())
                     .statut(EnumStatut.ACTIF)
-                    .password(adminCfg.getPassword()) // Encodé via BCrypt lors de l'Itération 5
+                    .password(passwordEncoder.encode(adminCfg.getPassword()))
                     .dateCreation(LocalDateTime.now())
                     .roles(new HashSet<>()) // Initialisation de la collection ManyToMany
                     .build();

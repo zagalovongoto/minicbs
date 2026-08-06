@@ -393,4 +393,89 @@ tr.htmx-swapping, tr.htmx-swapping td {
     font-weight: 600 !important;
 }
 
+/* ==========================================================================
+   Design System de la Forteresse d'Authentification (Mire Premium GIM)
+   ========================================================================== */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    background-color: #ffffff;
+}
+
+/* Panneau Gauche : Identité Institutionnelle */
+.auth-side-banner {
+    background: linear-gradient(135deg, #032b56 0%, #053c78 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content:间-between;
+    padding: 3.5rem;
+    color: #ffffff;
+}
+
+/* Grille géométrique en arrière-plan simulant la blockchain / sécurité */
+.auth-side-banner::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.04;
+    background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+/* Motif de vagues technologiques GIM pastel en fond */
+.gim-wave-pattern {
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(230,240,250,0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Badge de conformité UEMOA */
+.compliance-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fcd34d; /* Or Pastel */
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Panneau Droit : Formulaire épuré */
+.auth-form-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background-color: #f8fafc;
+}
+
+.auth-form-card {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-input-icon {
+    background-color: #ffffff !important;
+    border-right: none !important;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.form-control-saas:focus + .auth-input-icon,
+.input-group:focus-within .auth-input-icon {
+    color: var(--gimuemoa-marine);
+}
+
+
 
