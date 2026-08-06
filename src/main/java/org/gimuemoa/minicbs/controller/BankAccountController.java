@@ -33,7 +33,6 @@ public class BankAccountController {
         model.addAttribute("allStatus", Arrays.stream(EnumAccountStatus.values()).map(Enum::name).collect(Collectors.toList()));
     }
 
-    // 1. Liste globale des comptes (Recherche et Pagination HTMX)
     @GetMapping
     public String listAccounts(
             @RequestParam(value = "search", required = false, defaultValue = "") String search,
@@ -42,24 +41,15 @@ public class BankAccountController {
             @RequestHeader(value = "HX-Request", required = false) String htmxRequest,
             Model model) {
 
-        // En attendant une méthode paginée globale sur le service des comptes,
-        // nous simulons un affichage à l'aide de la liste existante pour les besoins de l'écran.
-        // Si vous avez besoin de paginer, vous pourrez adapter le repository comme pour les clients.
-        // Pour l'instant, nous chargeons les comptes pour le client ou via une recherche brute.
-        List<BankAccountDTO> accounts;
-        if (search != null && !search.trim().isEmpty()) {
-            // Logique de filtrage simplifiée pour le prototype
-            accounts = accountService.getAccountsByClient(1L); // Exemple temporaire
-        } else {
-            accounts = accountService.getAccountsByClient(1L); // Récupère par défaut pour le client 1
-        }
+        // Appel de la méthode paginée propre et ultra-sécurisée
+        Page<BankAccountDTO> accountPage = accountService.getPaginatedAccounts(search, page, size);
 
-        model.addAttribute("accounts", accounts);
-        model.addAttribute("currentPageNumber", page);
-        model.addAttribute("totalPages", accounts.isEmpty() ? 0 : 1);
-        model.addAttribute("totalElements", (long) accounts.size());
+        model.addAttribute("accounts", accountPage.getContent());
+        model.addAttribute("currentPageNumber", accountPage.getNumber());
+        model.addAttribute("totalPages", accountPage.getTotalPages());
+        model.addAttribute("totalElements", accountPage.getTotalElements());
         model.addAttribute("search", search);
-        model.addAttribute("currentPage", "accounts"); // Active le menu sidebar
+        model.addAttribute("currentPage", "accounts");
 
         if (htmxRequest != null) {
             return "accounts/list :: account-table-content";

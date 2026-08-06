@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="modale-recu"
+     class="position-fixed top-0 start-0 w-100 h-100"
+     style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);"
+     x-data="{ isOpen: false }"
+     x-show="isOpen"
+     @open-receipt-modal.window="isOpen = true"
+     @keydown.escape.window="isOpen = false"
+     x-transition.opacity>
+
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;" @click.away="isOpen = false">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; background-color: #ffffff;">
+
+            <!-- En-tête de la modale -->
+            <div class="modal-header border-bottom p-4">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-check text-success fs-4"></i>
+                    <span>Validation du Reçu GIM</span>
+                </h5>
+                <button type="button" class="btn-close" @click="isOpen = false"></button>
+            </div>
+
+            <!-- Corps du reçu -->
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <div class="text-center mb-4">
+                    <span class="text-uppercase tracking-wider fw-bold text-muted small d-block mb-1">Montant à Mouvementer</span>
+                    <h2 class="display-6 fw-extrabold text-dark m-0">
+                        <span x-text="montant.toLocaleString('fr-FR')">0</span>
+                        <span class="fs-4 text-secondary fw-normal">XOF</span>
+                    </h2>
+                    <div class="mt-2">
+                        <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1.5 rounded-pill font-monospace small">
+                            + <span x-text="(montant * tauxFrais).toFixed(0)">0</span> XOF (Frais GIM inclus)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card border border-light-subtle rounded-3 p-3 bg-white mb-3">
+                    <div class="d-flex flex-column gap-2.5 small">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted fw-medium">Nature Opération :</span>
+                            <span class="fw-bold text-dark font-monospace" x-text="typeOp">OPERATION</span>
+                        </div>
+
+                        <!-- Affiché si compte débiteur requis -->
+                        <div class="border-top pt-2" x-show="typeOp === 'VIREMENT' || typeOp === 'RETRAIT'">
+                            <span class="text-muted fw-medium d-block mb-1">Compte Débiteur (Source) :</span>
+                            <span class="font-monospace text-dark d-block text-truncate p-2 bg-light rounded"
+                                  x-text="valDebiteur ? valDebiteur : 'Non renseigné'">-</span>
+                        </div>
+
+                        <!-- Affiché si compte créditeur requis -->
+                        <div class="border-top pt-2" x-show="typeOp === 'VIREMENT' || typeOp === 'DEPOT'">
+                            <span class="text-muted fw-medium d-block mb-1">Compte Créditeur (Cible) :</span>
+                            <span class="font-monospace text-dark d-block text-truncate p-2 bg-light rounded"
+                                  x-text="valCrediteur ? valCrediteur : 'Non renseigné'">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-muted text-center m-0" style="font-size: 0.8rem;">
+                    <i class="bi bi-info-circle me-1"></i> Cette action inscrira une écriture comptable définitive et irréversible dans le Grand Livre.
+                </p>
+            </div>
+
+            <!-- Pied de la modale avec la vraie soumission du formulaire -->
+            <div class="modal-footer border-top p-3 d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary rounded-3 px-3 py-2 fw-medium small" @click="isOpen = false">
+                    Corriger la saisie
+                </button>
+                <!-- Ce bouton déclenche la vraie soumission HTML du formulaire vers Spring Boot -->
+                <button type="submit" class="btn btn-success rounded-3 px-4 py-2 fw-medium small d-flex align-items-center gap-1" style="background-color: #16a34a; border-color: #16a34a;">
+                    <i class="bi bi-shield-fill-check"></i>
+                    <span>Confirmer l'Écriture</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -45,6 +45,8 @@ public class AppUserDTO {
     @NotNull(message = "Le statut est obligatoire")
     private String statut; // Reçoit la valeur de l'Enum (ex: "ACTIF", "INACTIF")
 
+    private String password;
+
     private LocalDateTime dateCreation;
     private LocalDateTime dateModification;
     private LocalDateTime derniereConnexion;

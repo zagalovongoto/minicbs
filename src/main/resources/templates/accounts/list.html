@@ -96,6 +96,39 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- BLOC PAGINATION COMPTES STYLE SAAS (À insérer juste avant la fin du fragment HTMX) -->
+            <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-50">
+                <div class="small text-muted">
+                    Affichage de la page <span class="fw-semibold" th:text="${currentPageNumber + 1}">1</span> sur <span class="fw-semibold" th:text="${totalPages}">1</span> (<span th:text="${totalElements}">0</span> comptes au total)
+                </div>
+
+                <nav aria-label="Pagination">
+                    <ul class="pagination pagination-sm m-0 gap-1" hx-sync="this:replace">
+                        <!-- Précédent -->
+                        <li class="page-item" th:classappend="${currentPageNumber == 0} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == 0}"
+                                    th:hx-get="@{/accounts(search=${search}, page=${currentPageNumber - 1})}"
+                                    hx-target="#account-table-container">Précédent</button>
+                        </li>
+
+                        <!-- Numéros de pages -->
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPageNumber == i} ? 'active'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == i}"
+                                    th:hx-get="@{/accounts(search=${search}, page=${i})}"
+                                    hx-target="#account-table-container" th:text="${i + 1}">1</button>
+                        </li>
+
+                        <!-- Suivant -->
+                        <li class="page-item" th:classappend="${currentPageNumber == totalPages - 1} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == totalPages - 1}"
+                                    th:hx-get="@{/accounts(search=${search}, page=${currentPageNumber + 1})}"
+                                    hx-target="#account-table-container">Suivant</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
         </div>
 
     </div>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Grand Livre Comptable</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Grand Livre (Journal des Transactions)
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Barre d'actions supérieure avec filtre HTMX -->
+    <div class="card card-saas shadow-sm p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="flex-grow-1" style="max-width: 500px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-filter-square"></i></span>
+                    <input type="search" name="search" th:value="${search}"
+                           th:hx-get="@{/transactions/journal(sortBy=${sortBy}, direction=${direction})}"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#journal-table-container"
+                           class="form-control form-control-saas border-start-0"
+                           placeholder="Rechercher par référence TXN ou numéro de compte...">
+                </div>
+            </div>
+            <div class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i> Journal immuable mis à jour en temps réel
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteneur global du tableau (Cible HTMX) -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="journal-table-container">
+
+        <!-- FRAGMENT RECHARGEABLE HTMX -->
+        <div th:fragment="journal-table-content" class="w-100">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <!-- TRI COLONNE 1 : HORODATAGE / DATE -->
+                        <th class="py-3 px-4" style="cursor: pointer;"
+                            th:hx-get="@{/transactions/journal(search=${search}, page=${currentPageNumber}, sortBy='executedAt', direction=${sortBy == 'executedAt' && direction == 'asc' ? 'desc' : 'asc'})}"
+                            hx-target="#journal-table-container">
+                            Horodatage
+                            <i th:if="${sortBy == 'executedAt'}" th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                        </th>
+                        <th class="py-3">Type</th>
+                        <th class="py-3">Compte Débiteur (Source)</th>
+                        <th class="py-3">Compte Créditeur (Cible)</th>
+
+                        <!-- TRI COLONNE 2 : MONTANT -->
+                        <th class="py-3 text-end" style="cursor: pointer;"
+                            th:hx-get="@{/transactions/journal(search=${search}, page=${currentPageNumber}, sortBy='amount', direction=${sortBy == 'amount' && direction == 'asc' ? 'desc' : 'asc'})}"
+                            hx-target="#journal-table-container">
+                            Montant Mouvementé
+                            <i th:if="${sortBy == 'amount'}" th:class="${direction == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                        </th>
+                        <th class="py-3 px-4">Libellé d'écriture / Audit</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="t : ${transactions}" class="transition-fast">
+                        <td class="py-3 px-4">
+                            <div class="small text-dark fw-bold font-monospace" th:text="${t.reference}">TXN-00000</div>
+                            <small class="text-muted" th:text="${#temporals.format(t.executedAt, 'dd/MM/yyyy HH:mm:ss')}">01/01/2026</small>
+                        </td>
+                        <td class="py-3">
+                            <span class="badge rounded-2 px-2 py-1.5 small font-monospace"
+                                  th:classappend="${t.type == 'VIREMENT'} ? 'bg-primary bg-opacity-10 text-primary' : (${t.type == 'DEPOT'} ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger')"
+                                  th:text="${t.type}">DEPOT</span>
+                        </td>
+                        <td class="py-3">
+                            <span class="font-monospace small text-secondary"
+                                  th:text="${t.sourceDbtrAcct != null} ? ${t.sourceDbtrAcct} : '--- (Dépôt Espèces)'">IBAN</span>
+                        </td>
+                        <td class="py-3">
+                            <span class="font-monospace small text-secondary"
+                                  th:text="${t.destinationCdtrAcct != null} ? ${t.destinationCdtrAcct} : '--- (Retrait Espèces)'">IBAN</span>
+                        </td>
+                        <td class="py-3 text-end fw-bold text-dark fs-6 font-monospace">
+                            <span th:text="${#numbers.formatDecimal(t.amount, 1, 'WHITESPACE', 0, 'POINT')}">0</span>
+                            <small class="text-muted fw-normal">XOF</small>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="text-secondary small text-truncate" style="max-width: 280px;" th:text="${t.description}">Détails...</div>
+                            <small class="text-muted font-monospace" style="font-size: 0.75rem;" th:text="|ISO: ${t.endToEndId}|">E2E-ID</small>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(transactions)}">
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-text text-secondary opacity-50 display-6 d-block mb-2"></i>
+                            <span class="fw-medium">Aucune écriture comptable enregistrée dans le Grand Livre.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- INJECTION DYNAMIQUE DE LA PAGINATION POUR ÉVITER LES COUPURES DE CODE -->
+            <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-50">
+                <div class="small text-muted">
+                    Écritures <span class="fw-semibold" th:text="${currentPageNumber * 10 + 1}">1</span> à
+                    <span class="fw-semibold" th:text="${(currentPageNumber + 1) * 10 > totalElements ? totalElements : (currentPageNumber + 1) * 10}">10</span>
+                    sur <span class="fw-semibold" th:text="${totalElements}">0</span> au total
+                </div>
+                <nav aria-label="Pagination">
+                    <ul class="pagination pagination-sm m-0 gap-1" hx-sync="this:replace">
+                        <li class="page-item" th:classappend="${currentPageNumber == 0} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == 0}" th:hx-get="@{/transactions/journal(search=${search}, page=${currentPageNumber - 1}, sortBy=${sortBy}, direction=${direction})}" hx-target="#journal-table-container">Précédent</button>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPageNumber == i} ? 'active'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == i}" th:hx-get="@{/transactions/journal(search=${search}, page=${i}, sortBy=${sortBy}, direction=${direction})}" hx-target="#journal-table-container" th:text="${i + 1}">1</button>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPageNumber == totalPages - 1} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == totalPages - 1}" th:hx-get="@{/transactions/journal(search=${search}, page=${currentPageNumber + 1}, sortBy=${sortBy}, direction=${direction})}" hx-target="#journal-table-container">Suivant</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

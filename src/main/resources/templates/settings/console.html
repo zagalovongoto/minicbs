@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Paramètres Globaux</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Console de Paramétrage Système
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Messages d'alerte contextuels HTMX -->
+    <div id="alert-box">
+        <div th:if="${successMessage}" class="alert alert-success p-3 rounded-3 border-0 shadow-sm bg-success bg-opacity-10 text-success fw-medium mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger p-3 rounded-3 border-0 shadow-sm bg-danger bg-opacity-10 text-danger fw-medium mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${errorMessage}"></span>
+        </div>
+    </div>
+
+    <!-- GRILLE DE CONFIGURATION -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="parameters-container">
+        <div class="card-header-form border-bottom bg-light bg-opacity-50 p-4">
+            <h5 class="fw-bold text-dark m-0"><i class="bi bi-sliders text-primary me-2"></i>Dictionnaire des Constantes Métiers</h5>
+            <p class="text-muted small m-0 mt-1">Seul le profil Super Administrateur peut modifier ces clés. Toute altération modifie instantanément les calculs du guichet.</p>
+        </div>
+
+        <!-- FRAGMENT RECHARGEABLE HTMX -->
+        <div th:fragment="parameters-list" class="w-100" id="parameters-list-content">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-4" style="width: 25%;">Clé Configuration</th>
+                        <th class="py-3" style="width: 40%;">Description Fonctionnelle</th>
+                        <th class="py-3 text-end px-4" style="width: 35%;">Valeur Active en Base</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${parameters}" class="transition-fast">
+                        <!-- Clé de configuration -->
+                        <td class="py-3 px-4">
+                            <span class="font-monospace text-dark fw-bold small" th:text="${p.paramKey}">KEY</span>
+                        </td>
+                        <!-- Description -->
+                        <td class="py-3">
+                            <span class="text-secondary small" th:text="${p.description}">Description</span>
+                        </td>
+                        <!-- Valeur modifiable à la volée -->
+                        <td class="py-3 text-end px-4">
+                            <form th:if="${p.isEditable()}"
+                                  th:hx-post="@{/settings/update/{key}(key=${p.paramKey})}"
+                                  hx-target="#parameters-list-content"
+                                  hx-swap="outerHTML"
+                                  class="d-inline-flex align-items-center gap-2 justify-content-end w-100">
+                                <input type="text" name="value" th:value="${p.paramValue}"
+                                       class="form-control form-control-sm font-monospace text-end fw-bold px-2 py-1"
+                                       style="max-width: 180px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2.5 rounded-2" title="Sauvegarder la clé">
+                                    <i class="bi bi-save"></i>
+                                </button>
+                            </form>
+                            <!-- Si le paramètre est vital (ex: numéro de compte caisse), on bloque l'édition en ligne -->
+                            <div th:unless="${p.isEditable()}" class="font-monospace text-muted fw-bold small py-1">
+                                <span th:text="${p.paramValue}"></span>
+                                <i class="bi bi-lock-fill ms-1 text-danger-soft" title="Ajustement de structure verrouillé"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

@@ -38,9 +38,10 @@
         <div class="card-body p-4">
             <!-- ALPINIZATION : Initialisation du composant réactif Alpine.js -->
             <form th:action="@{/transactions/execute}" th:object="${transactionDTO}" method="post"
-                  x-data="{ typeOp: '', montant: 0, tauxFrais: 0.005 }">
+                  x-data="{ typeOp: '', montant: 0, tauxFrais: 0.005, valDebiteur: '', valCrediteur: '' }">
 
-                <!-- RÔLE ALPINE : Surveillance du type d'opération -->
+
+            <!-- RÔLE ALPINE : Surveillance du type d'opération -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label-saas">Nature du Mouvement Comptable</label>
@@ -80,7 +81,10 @@
                         <label class="form-label-saas text-danger fw-bold">Compte Débiteur (IBAN Source)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-box-arrow-up-right"></i></span>
-                            <input type="text" th:field="*{sourceDbtrAcct}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+                            <input type="text" th:field="*{sourceDbtrAcct}"
+                                   x-model="valDebiteur"
+                                   class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+
                             <div class="invalid-feedback feedback-saas" th:errors="*{sourceDbtrAcct}"></div>
                         </div>
                     </div>
@@ -90,7 +94,10 @@
                         <label class="form-label-saas text-success fw-bold">Compte Créditeur (IBAN Destination)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-box-arrow-down-left"></i></span>
-                            <input type="text" th:field="*{destinationCdtrAcct}" class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+                            <input type="text" th:field="*{destinationCdtrAcct}"
+                                   x-model="valCrediteur"
+                                   class="form-control form-control-saas border-start-0" th:errorclass="is-invalid" placeholder="Ex: CI0540100101...">
+
                             <div class="invalid-feedback feedback-saas" th:errors="*{destinationCdtrAcct}"></div>
                         </div>
                     </div>
@@ -128,12 +135,19 @@
                     <a th:href="@{/users}" class="btn btn-outline-secondary px-4 rounded-3 fw-medium">
                         Retour console
                     </a>
-                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium"
-                            th:attr="onclick='return confirm(\'Confirmer l\\\'exécution immédiate de cette opération financière ?\')'">
-                        <i class="bi bi-check-all fs-5"></i>
-                        <span>Exécuter l'Ordre</span>
+                    <!-- Au clic, Alpine bascule x-show de la modale à true -->
+                    <button type="button" class="btn btn-primary px-4 d-flex align-items-center gap-2 shadow-sm rounded-3 fw-medium"
+                            @click="if(typeOp !== '') { $dispatch('open-receipt-modal') } else { alert('Veuillez d\'abord sélectionner une nature d\'opération.') }">
+                        <i class="bi bi-file-earmark-check fs-5"></i>
+                        <span>Vérifier l'Ordre</span>
                     </button>
                 </div>
+
+                <!-- ==========================================================================
+                     MODALE DE CONFIRMATION DE REÇU FINANCIER (Alpine.js & Bootstrap Layout)
+                     ========================================================================== -->
+                <div th:replace="~{transactions/modale :: modale-recu}"></div>
+                <!-- ========================================================================== -->
             </form>
         </div>
     </div>

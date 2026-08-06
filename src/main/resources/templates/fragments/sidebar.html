@@ -57,8 +57,8 @@
                     <i class="bi bi-chevron-down small text-muted"></i>
                 </a>
                 <!-- Liste effondrable des opérations -->
-                <div class="collapse ps-3 mt-1" id="menuTransactions"
-                     th:classappend="${currentPage == 'transactions' || currentPage == 'guichet'} ? 'show'">
+                <!-- Liste effondrable des opérations rafraîchie -->
+                <div class="collapse ps-3 mt-1 show" id="menuTransactions">
                     <ul class="nav flex-column gap-1 list-unstyled border-start ps-2">
                         <li>
                             <a class="nav-link py-1.5 small text-secondary hover:text-dark transition"
@@ -68,8 +68,18 @@
                             </a>
                         </li>
                         <li>
-                            <a class="nav-link py-1.5 small text-secondary hover:text-dark transition" th:href="@{/transactions/journal}">
-                                <i class="bi bi-arrow-right-short me-1"></i>Grand Livre (Journal)
+                            <a class="nav-link py-1.5 small text-secondary hover:text-dark transition"
+                               th:href="@{/transactions/journal}"
+                               th:classappend="${currentPage == 'journal'} ? 'text-primary fw-bold'">
+                                <i class="bi bi-arrow-right-short me-1"></i>Journal des Opérations
+                            </a>
+                        </li>
+                        <!-- NOUVEAU LIEN : Le Grand Livre Centralisé -->
+                        <li>
+                            <a class="nav-link py-1.5 small text-secondary hover:text-dark transition"
+                               th:href="@{/transactions/grand-livre}"
+                               th:classappend="${currentPage == 'grand-livre'} ? 'text-primary fw-bold'">
+                                <i class="bi bi-arrow-right-short me-1"></i>Grand Livre Général
                             </a>
                         </li>
                     </ul>
@@ -94,7 +104,7 @@
                 <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
                    th:href="@{/users}"
                    th:classappend="${currentPage == 'users'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
-                    <i class="bi bi-shield-user fs-5"></i>
+                    <i class="bi bi-person-gear fs-5"></i>
                     <span>Gestionnaires</span>
                 </a>
             </li>
@@ -114,14 +124,16 @@
                     <span>Piste d'Audit</span>
                 </a>
             </li>
-            <!-- Paramètres Applicatifs -->
+            <!-- Paramètres Applicatifs Connectés -->
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center gap-3 px-3 py-2 rounded-3 fw-medium text-secondary transition"
-                   href="#" th:classappend="${currentPage == 'settings'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
+                   th:href="@{/settings}"
+                   th:classappend="${currentPage == 'settings'} ? 'bg-primary bg-opacity-10 text-primary active' : 'hover:bg-light hover:text-dark'">
                     <i class="bi bi-gear fs-5"></i>
                     <span>Paramètres Globaux</span>
                 </a>
             </li>
+
         </ul>
     </div>
 

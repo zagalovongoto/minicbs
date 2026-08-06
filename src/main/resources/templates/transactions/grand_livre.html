@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Grand Livre Général</title>
+</head>
+<body>
+
+<th:block layout:fragment="page-title">
+    Grand Livre Général (Comptabilité d'Établissement)
+</th:block>
+
+<section layout:fragment="content">
+
+    <!-- Zone de recherche supérieure -->
+    <div class="card card-saas shadow-sm p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="flex-grow-1" style="max-width: 500px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calculator-fill"></i></span>
+                    <input type="search" name="search" th:value="${search}"
+                           hx-get="/transactions/grand-livre"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#ledger-table-container"
+                           class="form-control form-control-saas border-start-0"
+                           placeholder="Filtrer par n° de compte ou référence d'écriture...">
+                </div>
+            </div>
+            <div class="text-secondary small fw-medium">
+                <span class="badge bg-dark px-2.5 py-1.5 border">Norme BCEAO SYSCOHADA</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau du Grand Livre (Cible HTMX) -->
+    <div class="card card-saas shadow-sm overflow-hidden" id="ledger-table-container">
+
+        <!-- FRAGMENT RECHARGEABLE -->
+        <div th:fragment="ledger-table-content" class="w-100">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-saas">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-4">Date Écriture</th>
+                        <th class="py-3">Référence Liaison</th>
+                        <th class="py-3">Compte Impacté (Client / Structure)</th>
+                        <th class="py-3 text-center">Sens</th>
+                        <th class="py-3 text-end px-4">Montant Écriture</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="e : ${entries}" class="transition-fast">
+                        <!-- Date -->
+                        <td class="py-3 px-4">
+                            <span class="text-secondary small font-monospace" th:text="${#temporals.format(e.entryDate, 'dd/MM/yyyy HH:mm:ss')}">01/01</span>
+                        </td>
+                        <!-- Référence Origine -->
+                        <td class="py-3">
+                            <span class="fw-bold font-monospace text-dark small" th:text="${e.transactionReference}">TXN-0000</span>
+                            <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-size: 0.65rem;" th:text="${e.transactionType}">TYPE</span>
+                        </td>
+                        <!-- Compte Impacté -->
+                        <td class="py-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi" th:classappend="${e.accountNumber.endsWith('11')} ? 'bi-bank text-danger' : (${e.accountNumber.endsWith('22')} ? 'bi-graph-up-arrow text-warning' : 'bi-person-circle text-primary')"></i>
+                                <span class="font-monospace text-dark fw-semibold" th:text="${e.accountNumber}">CI05401...</span>
+
+                                <!-- Libellés d'audit rapides pour les comptes internes -->
+                                <small class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10" th:if="${e.accountNumber.endsWith('11')}">Encaisse Caisse</small>
+                                <small class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-10" th:if="${e.accountNumber.endsWith('22')}">Commissions Produits</small>
+                                <small class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10" th:if="${e.accountNumber.endsWith('44')}">Liaison BCEAO</small>
+                            </div>
+                        </td>
+                        <!-- Sens Débit / Crédit -->
+                        <td class="text-center py-3">
+                                <span class="badge px-3 py-1.5 rounded fw-bold font-monospace"
+                                      th:classappend="${e.movementType == 'DEBIT'} ? 'bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25' : 'bg-success bg-opacity-10 text-success border border-success border-opacity-25'"
+                                      th:text="${e.movementType}">DEBIT</span>
+                        </td>
+                        <!-- Montant Écriture -->
+                        <td class="py-3 text-end fw-bold font-monospace px-4 fs-6"
+                            th:classappend="${e.movementType == 'DEBIT'} ? 'text-danger' : 'text-success'">
+                            <span th:text="${e.movementType == 'DEBIT' ? '-' : '+'}"></span>
+                            <span th:text="${#numbers.formatDecimal(e.amount, 1, 'WHITESPACE', 0, 'POINT')}">0</span>
+                            <small class="text-muted fw-normal" style="font-size: 0.75rem;">XOF</small>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(entries)}">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-calculator text-secondary opacity-50 display-6 d-block mb-2"></i>
+                            <span class="fw-medium">Aucune ligne comptable dans le grand livre général.</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION DU GRAND LIVRE -->
+            <div th:if="${totalPages > 0}" class="d-flex justify-content-between align-items-center p-4 border-top bg-light bg-opacity-50">
+                <div class="small text-muted">
+                    Lignes <span class="fw-semibold" th:text="${currentPageNumber * 15 + 1}">1</span> à
+                    <span class="fw-semibold" th:text="${(currentPageNumber + 1) * 15 > totalElements ? totalElements : (currentPageNumber + 1) * 15}">15</span>
+                    sur <span class="fw-semibold" th:text="${totalElements}">0</span> écritures
+                </div>
+                <nav aria-label="Pagination">
+                    <ul class="pagination pagination-sm m-0 gap-1" hx-sync="this:replace">
+                        <li class="page-item" th:classappend="${currentPageNumber == 0} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == 0}" th:hx-get="@{/transactions/grand-livre(search=${search}, page=${currentPageNumber - 1})}" hx-target="#ledger-table-container">Précédent</button>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPageNumber == i} ? 'active'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == i}" th:hx-get="@{/transactions/grand-livre(search=${search}, page=${i})}" hx-target="#ledger-table-container" th:text="${i + 1}">1</button>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPageNumber == totalPages - 1} ? 'disabled'">
+                            <button class="page-link rounded-2" th:disabled="${currentPageNumber == totalPages - 1}" th:hx-get="@{/transactions/grand-livre(search=${search}, page=${currentPageNumber + 1})}" hx-target="#ledger-table-container">Suivant</button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

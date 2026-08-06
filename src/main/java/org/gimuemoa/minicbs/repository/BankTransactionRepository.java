@@ -18,4 +18,11 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
             "t.sourceAccount.accountNumber = :accNum OR " +
             "t.destinationAccount.accountNumber = :accNum")
     Page<BankTransaction> findHistoryByAccountNumber(@Param("accNum") String accountNumber, Pageable pageable);
+
+    @Query("SELECT t FROM BankTransaction t WHERE " +
+            "LOWER(t.reference) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(t.sourceAccount.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(t.destinationAccount.accountNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<BankTransaction> searchInJournal(@Param("keyword") String keyword, Pageable pageable);
+
 }

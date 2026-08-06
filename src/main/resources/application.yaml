@@ -24,3 +24,58 @@ server:
   error:
     include-message: never
 
+# ==========================================================================
+# REPARAMÉTRAGE INSTITUTIONNEL & PARAMÈTRES D'AMORÇAGE (GIM-MINI-CBS)
+# ==========================================================================
+minicbs:
+  init:
+    # Profil souverain du Super Administrateur
+    admin:
+      nom: "GIM"
+      prenom: "Super Admin"
+      email: "admin@gimminicbs.org"
+      telephone: "+2250102030405"
+      password: "${MINICBS_ADMIN_PASSWORD:Admin@2026}" # Supporte la surcharge par variable d'environnement
+
+    # Rôles système requis pour l'habilitation future
+    roles:
+      - "ROLE_SUPER_ADMIN"
+      - "ROLE_MANAGER"
+      - "ROLE_GUICHETIER"
+
+    # Paramètres institutionnels, financiers et de structure General Ledger (GL)
+    parameters:
+      - key: "BANK_BIN"
+        value: "400012"
+        description: "Bank Identification Number (BIN) officiel GIM"
+        editable: true
+      - key: "BANK_CODE_ETAB"
+        value: "CI054"
+        description: "Code Etablissement Banque Centrale (BCEAO)"
+        editable: true
+      - key: "BANK_CODE_GUICHET"
+        value: "01001"
+        description: "Code Guichet du Siege Principal"
+        editable: true
+      - key: "FEE_RATE_TRANSACTION"
+        value: "0.005"
+        description: "Taux de prélèvement des frais sur opérations de guichet (0.5%)"
+        editable: true
+      - key: "GL_ACCOUNT_CAISSE"
+        value: "CI0540100101999999999911"
+        description: "Compte General Interne - Encaisse Physique Coffre-fort"
+        editable: false # Verrouillé par sécurité
+      - key: "GL_ACCOUNT_PRODUITS"
+        value: "CI0540100101999999999922"
+        description: "Compte General Interne - Commissions et Produits perçus"
+        editable: false
+      - key: "GL_ACCOUNT_CAPITAL"
+        value: "CI0540100101999999999933"
+        description: "Compte General Interne - Capital Social de l'institution"
+        editable: false
+      - key: "GL_ACCOUNT_LIAISON"
+        value: "CI0540100101999999999944"
+        description: "Compte General Interne - Liaison et Compensation Interbancaire GIM"
+        editable: false
+
+

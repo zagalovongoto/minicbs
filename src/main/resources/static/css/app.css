@@ -368,3 +368,29 @@ tr.htmx-swapping, tr.htmx-swapping td {
     font-weight: 600 !important;
 }
 
+/* ==========================================================================
+   Correctif de visibilité pour les Badges du Grand Livre (Bootstrap 5.0.2)
+   ========================================================================== */
+
+/* Fix pour le badge de type VIREMENT (Bleu GIM institutionnel) */
+.table-saas .bg-primary.bg-opacity-10 {
+    background-color: var(--gimuemoa-marine-light) !important; /* Fond bleu pastel doux officiel */
+    color: var(--gimuemoa-marine) !important;                  /* Texte vrai bleu GIM ultra-lisible */
+    font-weight: 600 !important;
+}
+
+/* Fix pour le badge de type DEPOT (Vert financier) */
+.table-saas .bg-success.bg-opacity-10 {
+    background-color: #dcfce7 !important; /* Fond vert pastel opaque */
+    color: #15803d !important;            /* Texte vert foncé lisible */
+    font-weight: 600 !important;
+}
+
+/* Fix pour le badge de type RETRAIT (Rouge alerte de débit) */
+.table-saas .bg-danger.bg-opacity-10 {
+    background-color: #fee2e2 !important; /* Fond rouge pastel opaque */
+    color: #b91c1c !important;            /* Texte rouge foncé lisible */
+    font-weight: 600 !important;
+}
+
+

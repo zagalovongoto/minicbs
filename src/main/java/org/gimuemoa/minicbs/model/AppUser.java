@@ -42,6 +42,9 @@ public class AppUser {
     @Column(nullable = false)
     private EnumStatut statut;
 
+    @Column(nullable = false, length = 100)
+    private String password;
+
     @Column(name = "date_creation", nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
