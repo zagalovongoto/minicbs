@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -246,4 +247,14 @@ public class BankTransactionServiceImpl implements BankTransactionService {
             throw new BusinessException("accountNumber", "L'opération est refusée : Le compte bancaire n'est pas actif.");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BankTransactionDTO> getTransactionListByAccountAndPeriod(String accountNumber, LocalDateTime start, LocalDateTime end) {
+        return transactionRepository.findStatementByPeriod(accountNumber, start, end)
+                .stream()
+                .map(transactionMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
 }

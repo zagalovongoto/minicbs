@@ -19,6 +19,8 @@ spring:
     restart:
       enabled: true
 
+   # Déconnexion automatique après 15 minutes d'inactivité
+
   # =======================
   # SERVEUR DE MESSAGERIE #
   # =======================

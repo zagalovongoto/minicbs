@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "system_parameters")
+@Table(name = "system_parameter")
 @Data
 @Builder
 @NoArgsConstructor

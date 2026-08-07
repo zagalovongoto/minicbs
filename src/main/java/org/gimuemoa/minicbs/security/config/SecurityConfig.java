@@ -1,6 +1,7 @@
 package org.gimuemoa.minicbs.security.config;
 
 import lombok.RequiredArgsConstructor;
+import org.gimuemoa.minicbs.security.CustomAuthenticationSuccessHandler;
 import org.gimuemoa.minicbs.security.CustomUserDetailsService;
 import org.gimuemoa.minicbs.security.PasswordExpirationFilter;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final PasswordExpirationFilter passwordExpirationFilter;
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
     // AMÉLIORATION CLÉ : Enregistrement du provider natif d'authentification lié à BCrypt
     @Bean
@@ -56,22 +58,39 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
+                // ==========================================================================
+                // GESTION ET PROTECTION DES SESSIONS DU CORE BANKING (CORRIGÉ)
+                // ==========================================================================
+                .sessionManagement(session -> session
+                        .sessionFixation(sessionFixation -> sessionFixation.newSession())
+                        // On utilise un sémantique plus précis pour éviter que le logout ne déclenche l'invalidation
+                        .invalidSessionUrl("/login?expired=true")
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
+                )
+
+
                 // 2. CONFIGURATION DU FORMULAIRE DE CONNEXION CUSTOM GIM
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .usernameParameter("loginInput")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/clients", true) // Redirection vers les clients après succès
+                        .defaultSuccessUrl("/", true) // Redirection vers les clients après succès
+                        .successHandler(authenticationSuccessHandler)
                         .permitAll()
                 )
 
-                // 3. GESTION DE LA CLÔTURE DE SESSION SECURISEE CSRF
+                // 3. GESTION DE LA CLÔTURE DE SESSION SECURISEE
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/login?logout=true") // Force le paramètre de déconnexion volontaire
+                    .invalidateHttpSession(true)           // Détruit la session HTTP
+                    .clearAuthentication(true)              // Efface les droits en mémoire
+                    .deleteCookies("JSESSIONID")            // Supprime le cookie de session Tomcat
+                    .permitAll()
                 );
+
 
         return http.build();
     }

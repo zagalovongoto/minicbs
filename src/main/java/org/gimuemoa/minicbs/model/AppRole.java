@@ -9,7 +9,7 @@ import org.gimuemoa.minicbs.model.enums.EnumRole;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "approle")
+@Table(name = "app_role")
 public class AppRole{
 
     @Id

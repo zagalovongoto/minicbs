@@ -3,12 +3,15 @@ package org.gimuemoa.minicbs.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gimuemoa.minicbs.dto.BankAccountDTO;
+import org.gimuemoa.minicbs.dto.BankTransactionDTO;
 import org.gimuemoa.minicbs.dto.ClientDTO;
 import org.gimuemoa.minicbs.exceptions.CustomExceptions.BusinessException;
 import org.gimuemoa.minicbs.model.enums.EnumAccountStatus;
 import org.gimuemoa.minicbs.model.enums.EnumAccountType;
 import org.gimuemoa.minicbs.service.BankAccountService;
+import org.gimuemoa.minicbs.service.BankTransactionService;
 import org.gimuemoa.minicbs.service.ClientService;
+import org.gimuemoa.minicbs.service.ExcelGeneratorService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +29,8 @@ public class BankAccountController {
 
     private final BankAccountService accountService;
     private final ClientService clientService;
+    private final BankTransactionService transactionService;
+    private final ExcelGeneratorService excelGeneratorService;
 
     @ModelAttribute
     public void addAttributes(Model model) {
@@ -99,4 +104,35 @@ public class BankAccountController {
             return "accounts/form";
         }
     }
+
+    @GetMapping("/download-statement/{accountNumber}")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.InputStreamResource> downloadAccountStatementExcel(
+            @PathVariable("accountNumber") String accountNumber,
+            @RequestParam(value = "start", required = false) String startStr,
+            @RequestParam(value = "end", required = false) String endStr) {
+
+        // 1. Gestion dynamique de la période (Par défaut : 30 derniers jours)
+        java.time.LocalDateTime endDate = (endStr != null && !endStr.isEmpty()) ?
+                java.time.LocalDate.parse(endStr).atTime(23, 59, 59) : java.time.LocalDateTime.now();
+
+        java.time.LocalDateTime startDate = (startStr != null && !startStr.isEmpty()) ?
+                java.time.LocalDate.parse(startStr).atStartOfDay() : endDate.minusDays(30);
+
+        // 2. Extraction filtrée depuis les livres SQL
+        List<BankTransactionDTO> history = transactionService.getTransactionListByAccountAndPeriod(accountNumber, startDate, endDate);
+
+        // 3. Production du classeur binaire Excel Apache POI (Vous pouvez passer les dates au générateur pour les écrire dans l'en-tête !)
+        java.io.ByteArrayInputStream excelStream = excelGeneratorService.generateAccountStatementExcel(accountNumber, history);
+
+        // 4. Configuration des en-têtes de téléchargement
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=RELEVE_" + accountNumber + ".xlsx");
+
+        return org.springframework.http.ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new org.springframework.core.io.InputStreamResource(excelStream));
+    }
+
 }

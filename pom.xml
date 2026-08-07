@@ -105,6 +105,12 @@
 			<version>1.3.30</version>
 		</dependency>
 
+		<!-- Génération et Manipulation de Fichiers Excel (Apache POI) -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.3</version>
+		</dependency>
 
 	</dependencies>
 
