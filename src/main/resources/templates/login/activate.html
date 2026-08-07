@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialisation du Compte - Mini CBS</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <style>
+        body { height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f8fafc !important; }
+        .card-activate { max-width: 460px; width: 100%; border: none; border-radius: 16px; background: #ffffff; }
+        .brand-logo { background-color: #053c78; width: 48px; height: 48px; border-radius: 12px; }
+        [x-cloak] { display: none !important; }
+    </style>
+    <!-- Chargement d'Alpine.js si non inclus dans le layout principal -->
+    <script defer href="https://unpkg.com"></script>
+</head>
+<body>
+
+<!-- FIX : Utilisation de x-data brut sans th: -->
+<div class="card card-activate shadow p-4" x-data="{ pwd: '', confirm: '' }">
+    <div class="text-center mb-4">
+        <div class="brand-logo d-flex align-items-center justify-content-center mx-auto shadow-sm mb-3">
+            <i class="bi bi-key-fill text-white fs-4"></i>
+        </div>
+        <h4 class="fw-bold text-dark m-0">Activation de session</h4>
+        <p class="text-muted small mt-1">Configurez vos identifiants d'accès finaux pour la zone UEMOA.</p>
+    </div>
+
+    <!-- Bandeau d'erreur de traitement -->
+    <div th:if="${errorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-3 p-2.5 small">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span th:text="${errorMessage}">Erreur</span>
+    </div>
+
+    <form th:action="@{/login/activate}" method="post">
+        <!-- Jeton d'authentification masqué envoyé en POST -->
+        <input type="hidden" name="token" th:value="${token}">
+
+        <!-- Lecture seule de l'e-mail pro affecté par les RH -->
+        <div class="mb-3">
+            <label class="form-label-saas text-muted">Adresse Email (Assignée)</label>
+            <input type="text" th:value="${email}" class="form-control form-control-saas bg-light text-secondary small fw-medium" readonly>
+        </div>
+
+        <!-- Personnalisation du Username court -->
+        <div class="mb-3">
+            <label class="form-label-saas">Identifiant unique de connexion (Username)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person-fill"></i></span>
+                <input type="text" name="username" th:value="${usernameSuggestion}" class="form-control form-control-saas border-start-0 font-monospace small fw-bold" required>
+            </div>
+        </div>
+
+        <!-- Saisie clé secrète -->
+        <div class="mb-3">
+            <label class="form-label-saas">Nouveau mot de passe de sécurité</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock-fill"></i></span>
+                <!-- FIX : x-model brut -->
+                <input type="password" name="password" x-model="pwd" class="form-control form-control-saas border-start-0" placeholder="Minimum 8 caractères" required>
+            </div>
+        </div>
+
+        <!-- Confirmation clé secrète -->
+        <div class="mb-4">
+            <label class="form-label-saas">Confirmez votre mot de passe</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock-check-fill"></i></span>
+                <!-- FIX : x-model brut -->
+                <input type="password" name="confirmPassword" x-model="confirm" class="form-control form-control-saas border-start-0" placeholder="Re-saisissez à l'identique" required>
+            </div>
+
+            <!-- FIX : x-show brut et masquage x-cloak -->
+            <div x-show="confirm.length > 0 && pwd !== confirm" x-cloak class="text-danger small mt-2 fw-medium">
+                <i class="bi bi-x-circle-fill me-1"></i> Les deux clés ne correspondent pas.
+            </div>
+            <div x-show="confirm.length > 0 && pwd === confirm && pwd.length >= 8" x-cloak class="text-success small mt-2 fw-medium">
+                <i class="bi bi-check-circle-fill me-1"></i> Clé de sécurité valide et conforme.
+            </div>
+        </div>
+
+        <!-- Validation souveraine : :disabled dynamique lié à l'état Alpine -->
+        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm rounded-3"
+                :disabled="pwd.length < 8 || pwd !== confirm">
+            <i class="bi bi-shield-fill-check me-1"></i> Finaliser et Activer mon accès
+        </button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -80,18 +80,37 @@
                     <span th:text="${logoutMessage}">Session clôturée proprement.</span>
                 </div>
 
+                <!-- ALERTE : Token expiré ou corrompu -->
+                <div th:if="${param.error != null && param.error[0] == 'token_invalid_or_expired'}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4 p-3 rounded-3 shadow-sm border-0">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong class="d-block">Lien d'activation expiré</strong>
+                        <span>Ce jeton de sécurité est invalide, a déjà été utilisé, ou a dépassé sa validité de 24h.</span>
+                    </div>
+                </div>
+
+                <!-- ALERTE : Succès d'activation du mot de passe -->
+                <div th:if="${param.success != null && param.success[0] == 'account_activated'}" class="alert d-flex align-items-center gap-2 mb-4 p-3 rounded-3 shadow-sm border-0 bg-success bg-opacity-10 text-success fw-medium small">
+                    <i class="bi bi-check-circle-fill fs-5 flex-shrink-0"></i>
+                    <div>
+                        <strong class="d-block text-success">Compte activé avec succès !</strong>
+                        <span>Votre clé de sécurité BCrypt est enregistrée. Saisissez votre identifiant pour ouvrir votre session.</span>
+                    </div>
+                </div>
+
                 <!-- FORMULAIRE COMPATIBLE DIRECTEMENT AVEC CONFIGURATION SPRING -->
                 <form th:action="@{/login}" method="post">
 
                     <!-- Champ Identifiant Email -->
                     <div class="mb-3.5">
-                        <label class="form-label-saas">Identifiant Professionnel (Email)</label>
+                        <label class="form-label-saas">Identifiant (Username ou Email)</label>
                         <div class="input-group">
-                            <span class="input-group-text auth-input-icon"><i class="bi bi-envelope-fill"></i></span>
-                            <input type="email" name="email" class="form-control form-control-saas border-start-0 ps-1"
-                                   placeholder="nom.prenom@gimminicbs.org" required autocomplete="email" autofocus>
+                            <span class="input-group-text auth-input-icon"><i class="bi bi-person-fill"></i></span>
+                            <input type="text" name="loginInput" class="form-control form-control-saas border-start-0 ps-1"
+                                   placeholder="ex: gim.admin ou admin@gimminicbs.org" required autofocus>
                         </div>
                     </div>
+
 
                     <!-- Champ Clé Secrète (Password) -->
                     <div class="mb-4">

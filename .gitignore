@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignorer les fichiers de configuration d'environnements
+/src/main/resources/application-dev.yml

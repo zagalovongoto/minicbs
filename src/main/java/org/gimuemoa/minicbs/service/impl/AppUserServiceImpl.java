@@ -4,13 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.gimuemoa.minicbs.dto.AppUserDTO;
 import org.gimuemoa.minicbs.exceptions.CustomExceptions.BusinessException;
 import org.gimuemoa.minicbs.mapper.AppUserMapper;
+import org.gimuemoa.minicbs.model.ActivationToken;
 import org.gimuemoa.minicbs.model.AppRole;
 import org.gimuemoa.minicbs.model.AppUser;
 import org.gimuemoa.minicbs.model.enums.EnumRole;
 import org.gimuemoa.minicbs.model.enums.EnumStatut;
+import org.gimuemoa.minicbs.repository.ActivationTokenRepository;
 import org.gimuemoa.minicbs.repository.AppRoleRepository;
 import org.gimuemoa.minicbs.repository.AppUserRepository;
 import org.gimuemoa.minicbs.service.AppUserService;
+import org.gimuemoa.minicbs.service.EmailService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,35 +33,68 @@ public class AppUserServiceImpl implements AppUserService {
     private final AppUserRepository userRepository;
     private final AppRoleRepository roleRepository;
     private final AppUserMapper userMapper;
+    private final ActivationTokenRepository tokenRepository;
+    private final EmailService emailService;
 
     @Override
     public AppUserDTO createUser(AppUserDTO userDTO) {
-        // 1. Vérification de l'unicité de l'email
+        // 1. CONTRÔLES PRUDENTIELS D'UNICITÉ (BCEAO Standards)
         if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new BusinessException("email", "Cette adresse email est déjà utilisée.");
+            throw new BusinessException("email", "Cette adresse email professionnelle est deja utilisee.");
         }
 
-        // 2. Conversion partielle du DTO vers l'entité
-        AppUser user = userMapper.toEntity(userDTO);
+        // Génération automatique du username si non fourni (ex: prenom.nom)
+        String generatedUsername = userDTO.getUsername() != null ? userDTO.getUsername().trim().toLowerCase() :
+                (userDTO.getPrenom().trim() + "." + userDTO.getNom().trim()).toLowerCase().replaceAll("\\s+", "");
 
-        // 3. Récupération des VRAIS rôles depuis la base de données
+        if (userRepository.existsByUsername(generatedUsername)) {
+            throw new BusinessException("username", "L'identifiant de connexion [" + generatedUsername + "] est deja attribue à un autre agent.");
+        }
+
+        // 2. Conversion et préparation de l'entité
+        AppUser user = userMapper.toEntity(userDTO);
+        user.setUsername(generatedUsername);
+
+        // Règle de sécurité : Un mot de passe aléatoire temporaire est injecté en attendant l'activation
+        user.setPassword(java.util.UUID.randomUUID().toString());
+        user.setMustChangePassword(true); // Bloquera l'accès via le filtre tant qu'il n'a pas défini sa clé
+        user.setStatut(org.gimuemoa.minicbs.model.enums.EnumStatut.ACTIF); // Compte prêt à être activé
+
+        // 3. Récupération des rôles depuis la base de données
         Set<AppRole> databaseRoles = new HashSet<>();
         if (userDTO.getRoles() != null) {
             for (String roleNameStr : userDTO.getRoles()) {
                 EnumRole enumRole = EnumRole.valueOf(roleNameStr);
                 AppRole appRole = roleRepository.findByRoleName(enumRole)
-                        .orElseThrow(() -> new RuntimeException("Le rôle " + roleNameStr + " n'existe pas en base de données."));
+                        .orElseThrow(() -> new BusinessException("roles", "Le role " + roleNameStr + " n'existe pas en base."));
                 databaseRoles.add(appRole);
             }
         }
-
-        // On associe les rôles gérés par Hibernate à notre entité
         user.setRoles(databaseRoles);
 
-        // 4. Sauvegarde
+        // 4. Sauvegarde de l'utilisateur dans le grand livre des habilitations
         AppUser savedUser = userRepository.save(user);
+
+        // ==========================================================================
+        // CRÉATION DU JETON D'ACTIVATION ET EXPÉDITION DU LIEN SÉCURISÉ (ÉTAPE 2)
+        // ==========================================================================
+        String uniqueToken = java.util.UUID.randomUUID().toString();
+
+        ActivationToken activationToken = ActivationToken.builder()
+                .token(uniqueToken)
+                .user(savedUser)
+                .expiryDate(java.time.LocalDateTime.now().plusDays(1)) // Expire strictement sous 24h
+                .isUsed(false)
+                .build();
+
+        tokenRepository.save(activationToken);
+
+        // Expédition asynchrone du mail d'activation aux couleurs du GIM
+        emailService.sendActivationEmail(savedUser, uniqueToken);
+
         return userMapper.toDto(savedUser);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -79,28 +115,48 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public AppUserDTO updateUser(Long id, AppUserDTO userDTO) {
         AppUser existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Modification impossible, utilisateur introuvable."));
+                .orElseThrow(() -> new BusinessException("id", "Modification impossible : Utilisateur introuvable."));
 
-        // Mise à jour des informations de base
-        existingUser.setNom(userDTO.getNom());
-        existingUser.setPrenom(userDTO.getPrenom());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setTelephone(userDTO.getTelephone());
-        existingUser.setPhoto(userDTO.getPhoto());
-        existingUser.setStatut(userDTO.getStatut() != null ? EnumStatut.valueOf(userDTO.getStatut()) : null);
+        // 1. CONTRÔLE PRUDENTIEL : Unicité de l'email si modifié
+        if (!existingUser.getEmail().equalsIgnoreCase(userDTO.getEmail())) {
+            if (userRepository.existsByEmail(userDTO.getEmail())) {
+                throw new BusinessException("email", "Cette adresse email est déjà attribuée à un autre agent.");
+            }
+            existingUser.setEmail(userDTO.getEmail().trim().toLowerCase());
+        }
 
-        // Mise à jour des rôles
+        // 2. CONTRÔLE PRUDENTIEL : Unicité du username si modifié
+        String newUsername = userDTO.getUsername() != null ? userDTO.getUsername().trim().toLowerCase() : existingUser.getUsername();
+        if (!existingUser.getUsername().equalsIgnoreCase(newUsername)) {
+            if (userRepository.existsByUsername(newUsername)) {
+                throw new BusinessException("username", "L'identifiant [" + newUsername + "] est déjà utilisé par un autre agent.");
+            }
+            existingUser.setUsername(newUsername);
+        }
+
+        // 3. Mise à jour des informations de base
+        existingUser.setNom(userDTO.getNom().trim());
+        existingUser.setPrenom(userDTO.getPrenom().trim());
+        existingUser.setTelephone(userDTO.getTelephone().trim());
+
+        // Sécurité de statut : Si non fourni, on conserve l'ancien statut existant au lieu de mettre null
+        if (userDTO.getStatut() != null) {
+            existingUser.setStatut(EnumStatut.valueOf(userDTO.getStatut()));
+        }
+
+        // 4. Mise à jour des rôles d'habilitations
         Set<AppRole> databaseRoles = new HashSet<>();
         if (userDTO.getRoles() != null) {
             for (String roleNameStr : userDTO.getRoles()) {
                 EnumRole enumRole = EnumRole.valueOf(roleNameStr);
                 AppRole appRole = roleRepository.findByRoleName(enumRole)
-                        .orElseThrow(() -> new RuntimeException("Le rôle " + roleNameStr + " n'existe pas."));
+                        .orElseThrow(() -> new BusinessException("roles", "Le rôle " + roleNameStr + " n'existe pas en base."));
                 databaseRoles.add(appRole);
             }
+            existingUser.setRoles(databaseRoles);
         }
-        existingUser.setRoles(databaseRoles);
 
+        // Le déclencheur @PreUpdate onUpdate() de l'entité va automatiquement actualiser 'dateModification' ici !
         AppUser updatedUser = userRepository.save(existingUser);
         return userMapper.toDto(updatedUser);
     }
@@ -115,7 +171,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public org.springframework.data.domain.Page<AppUserDTO> getPaginatedAndSearchedUsers(
+    public Page<AppUserDTO> getPaginatedAndSearchedUsers(
             String keyword, int page, int size, String sortBy, String direction) {
 
         // 1. Création de l'objet de tri et de pagination

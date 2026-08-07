@@ -11,7 +11,7 @@
 	<groupId>org.gimuemoa</groupId>
 	<artifactId>mini-cbs</artifactId> <!-- Remplacez test_spring4 ici -->
 	<version>0.0.1-SNAPSHOT</version>
-	<name>GIM Mini CBS</name>
+	<name>Mini CBS</name>
 	<description>Mini Core Banking System compliant with ISO 20022</description>
 	<url/>
 	<licenses>
@@ -92,6 +92,19 @@
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 		</dependency>
+
+		<!-- Module d'expédition des notifications de sécurité (e-mails) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.librepdf</groupId>
+			<artifactId>openpdf</artifactId>
+			<version>1.3.30</version>
+		</dependency>
+
 
 	</dependencies>
 

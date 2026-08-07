@@ -15,6 +15,9 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     // Utile pour vérifier l'unicité de l'email lors de l'inscription
     Optional<AppUser> findByEmail(String email);
     boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
+    Optional<AppUser> findByUsernameOrEmail(String username, String email);
+    Optional<AppUser> findByUsername(String username);
 
     @Query("SELECT u FROM AppUser u WHERE " +
             "LOWER(u.nom) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

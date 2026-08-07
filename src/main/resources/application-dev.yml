@@ -7,3 +7,8 @@ POSTGRES_SQL_USERNAME: postgres
 POSTGRES_SQL_PASSWORD: Zagzagzag@99
 POSTGRES_SQL_PORT: 5432
 POSTGRES_SQL_DB: minicbs
+  
+SMTP_HOST: smtp.office365.com
+SMTP_PORT: 587
+SMTP_USERNAME: giift@gim-uemoa.org
+SMTP_PASSWORD: lzlxbjxrksswnbrg

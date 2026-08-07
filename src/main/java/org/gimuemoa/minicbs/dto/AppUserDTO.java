@@ -40,7 +40,7 @@ public class AppUserDTO {
     @NotBlank(message = "Le téléphone est obligatoire")
     private String telephone;
 
-    private String photo;
+    private String username;
 
     @NotNull(message = "Le statut est obligatoire")
     private String statut; // Reçoit la valeur de l'Enum (ex: "ACTIF", "INACTIF")

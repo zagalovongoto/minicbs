@@ -10,6 +10,8 @@ public interface BankTransactionService {
     // Import requis : org.springframework.data.domain.Page;
     Page<BankTransactionDTO> getAllTransactionsJournal(String keyword, int page, int size, String sortBy, String direction);
 
+    BankTransactionDTO getTransactionByReference(String reference);
+
     Page<AccountingEntryDTO> getGeneralLedger(String keyword, int page, int size);
 
 }

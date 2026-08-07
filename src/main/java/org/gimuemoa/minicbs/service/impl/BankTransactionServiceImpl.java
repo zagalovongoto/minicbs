@@ -208,6 +208,15 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 
     @Override
     @Transactional(readOnly = true)
+    public BankTransactionDTO getTransactionByReference(String reference) {
+        BankTransaction txn = transactionRepository.findByReference(reference)
+                .orElseThrow(() -> new BusinessException("reference", "Erreur audit : L'ordre financier avec la référence [" + reference + "] est introuvable."));
+        return transactionMapper.toDto(txn);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<BankTransactionDTO> getAllTransactionsJournal(String keyword, int page, int size, String sortBy, String direction) {
         Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);

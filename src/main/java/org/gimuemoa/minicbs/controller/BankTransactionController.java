@@ -7,12 +7,18 @@ import org.gimuemoa.minicbs.dto.BankTransactionDTO;
 import org.gimuemoa.minicbs.exceptions.CustomExceptions.BusinessException;
 import org.gimuemoa.minicbs.model.enums.EnumTransactionType;
 import org.gimuemoa.minicbs.service.BankTransactionService;
+import org.gimuemoa.minicbs.service.PdfGeneratorService;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -22,22 +28,33 @@ import java.util.stream.Collectors;
 public class BankTransactionController {
 
     private final BankTransactionService transactionService;
+    private final PdfGeneratorService pdfGeneratorService; // Injectez le service PDF dans votre constructeur
 
     @ModelAttribute
     public void addAttributes(Model model) {
-        model.addAttribute("allTypes", Arrays.stream(EnumTransactionType.values()).map(Enum::name).collect(Collectors.toList()));
+        model.addAttribute("allTypes", Arrays.stream(EnumTransactionType.values())
+                .map(Enum::name)
+                .collect(Collectors.toList()));
     }
 
-    // Afficher le guichet de saisie
+    // Afficher le guichet de saisie (Version optimisée PRG Pattern)
     @GetMapping("/guichet")
     public String showGuichet(Model model) {
-        model.addAttribute("transactionDTO", new BankTransactionDTO());
-        model.addAttribute("currentPage", "transactions");
+        // Évite d'écraser les attributs Flash du redirect après exécution
+        if (!model.containsAttribute("transactionDTO")) {
+            model.addAttribute("transactionDTO", new BankTransactionDTO());
+        }
+
+        // Active l'allumage bleu du menu dans la sidebar
+        model.addAttribute("currentPage", "guichet");
         return "transactions/guichet";
     }
 
+
+
+
     // Traiter l'opération financière
-    @PostMapping("/execute")
+    /*@PostMapping("/execute")
     public String executeTransaction(
             @Valid @ModelAttribute("transactionDTO") BankTransactionDTO dto,
             BindingResult result,
@@ -61,7 +78,47 @@ public class BankTransactionController {
             }
             return "transactions/guichet";
         }
+
+    }*/
+
+    @PostMapping("/execute")
+    public String executeTransaction(
+            @Valid @ModelAttribute("transactionDTO") BankTransactionDTO dto,
+            BindingResult result,
+            Model model,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) { // <-- AJOUT DU PARAMÈTRE
+
+        if (result.hasErrors()) {
+            // En cas d'erreur de formulaire, on recharge le select d'opérations
+            model.addAttribute("allTypes", org.gimuemoa.minicbs.model.enums.EnumTransactionType.values());
+            return "transactions/guichet";
+        }
+
+        try {
+            // 1. Capturer le DTO de résultat renvoyé par le Core Banking (contient la référence unique)
+            BankTransactionDTO savedTx = transactionService.executeTransaction(dto);
+
+            // 2. Transmettre les attributs via Flash pour survivre à la redirection
+            redirectAttributes.addFlashAttribute("successMessage", "L'opération financière a été validée avec succès dans le Grand Livre.");
+            redirectAttributes.addFlashAttribute("txReference", savedTx.getReference()); // <-- LIVRAISON À THYMELEAF
+
+            // 3. Redirection propre pour vider le formulaire et activer le bouton de reçu
+            return "redirect:/transactions/guichet";
+
+        } catch (BusinessException ex) {
+            // En cas d'erreur métier, on recharge les types pour l'affichage immédiat
+            model.addAttribute("allTypes", org.gimuemoa.minicbs.model.enums.EnumTransactionType.values());
+
+            if (ex.getFieldName() != null) {
+                result.rejectValue(ex.getFieldName(), "error.business", ex.getMessage());
+            } else {
+                model.addAttribute("globalErrorMessage", ex.getMessage());
+            }
+            return "transactions/guichet";
+        }
     }
+
+
 
     //Journal des opérations
     @GetMapping("/journal")
@@ -120,6 +177,26 @@ public class BankTransactionController {
 
         return "transactions/grand_livre";
     }
+
+    @GetMapping("/download-receipt/{reference}")
+    public ResponseEntity<InputStreamResource> downloadTransactionReceipt(@PathVariable("reference") String reference) {
+        // 1. Récupération de l'historique de la transaction par sa référence unique
+        BankTransactionDTO transaction = transactionService.getTransactionByReference(reference);
+
+        // 2. Génération du flux binaire PDF
+        ByteArrayInputStream pdfStream = pdfGeneratorService.generateTransactionReceipt(transaction);
+
+        // 3. Préparation des en-têtes HTTP pour le téléchargement forcé du fichier
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=RECU_" + reference + ".pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(pdfStream));
+    }
+
 
 
 }

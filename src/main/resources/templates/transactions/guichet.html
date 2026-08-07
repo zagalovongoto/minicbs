@@ -14,10 +14,22 @@
 
 <section layout:fragment="content">
 
-    <!-- Messages de succès ou d'erreur globale -->
-    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center gap-2 mb-4 p-3 rounded-3 border-0 shadow-sm bg-success bg-opacity-10 text-success fw-medium">
-        <i class="bi bi-check-circle-fill fs-5"></i>
-        <span th:text="${successMessage}">Succès</span>
+    <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center justify-content-between gap-3 mb-4 p-3 rounded-3 border-0 shadow-sm bg-success bg-opacity-10 text-success fw-medium">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <div>
+                <span th:text="${successMessage}">Écriture comptable validée avec succès.</span>
+                <!-- Si une référence de transaction est passée, on l'affiche discrètement -->
+                <small class="d-block font-monospace text-secondary" th:if="${txReference}" th:text="|Réf: ${txReference}|">TXN-0000</small>
+            </div>
+        </div>
+        <!-- Bouton d'impression du Reçu PDF -->
+        <a th:if="${txReference}" th:href="@{/transactions/download-receipt/{ref}(ref=${txReference})}"
+           class="btn btn-sm btn-success d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-2 shadow-sm fw-bold border-0 transition-fast"
+           style="background-color: #16a34a; font-size: 0.8rem;">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            <span>Imprimer le Reçu PDF</span>
+        </a>
     </div>
 
     <div th:if="${globalErrorMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4">

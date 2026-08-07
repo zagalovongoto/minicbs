@@ -9,7 +9,6 @@ import org.gimuemoa.minicbs.model.enums.EnumRole;
 import org.gimuemoa.minicbs.model.enums.EnumStatut;
 import org.gimuemoa.minicbs.repository.*;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +68,7 @@ public class BankInitializer implements CommandLineRunner {
                     .nom(adminCfg.getNom())
                     .prenom(adminCfg.getPrenom())
                     .email(adminCfg.getEmail())
+                    .username(adminCfg.getUsername())
                     .telephone(adminCfg.getTelephone())
                     .statut(EnumStatut.ACTIF)
                     .password(passwordEncoder.encode(adminCfg.getPassword()))

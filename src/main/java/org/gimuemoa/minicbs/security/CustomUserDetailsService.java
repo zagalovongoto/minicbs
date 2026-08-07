@@ -20,24 +20,19 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final AppUserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Recherche de l'utilisateur par son identifiant Email
-        AppUser user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Aucun utilisateur trouve avec l'email : " + email));
+    public UserDetails loadUserByUsername(String loginInput) throws UsernameNotFoundException {
+        // Le paramètre loginInput reçoit la valeur saisie (que ce soit l'email ou le username)
+        AppUser user = userRepository.findByUsernameOrEmail(loginInput, loginInput)
+                .orElseThrow(() -> new UsernameNotFoundException("Identifiants incorrects pour : " + loginInput));
 
-        // Règle prudentielle : Bloquer la connexion si le gestionnaire est suspendu/inactif
-        if (user.getStatut() != EnumStatut.ACTIF) {
+        if (user.getStatut() != EnumStatut.ACTIF) { // Ajustez selon le nom de votre Enum (ACTIF ou ACTIVE)
             throw new UsernameNotFoundException("Ce compte utilisateur est actuellement suspendu.");
         }
 
-        // Conversion des EnumRole (ex: ROLE_SUPER_ADMIN) en autorités Spring Security
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getRoleName().name()))
                 .collect(Collectors.toList());
 
-        // Renvoie l'objet User officiel de Spring Security
-        return new User(user.getEmail(), user.getPassword(), authorities);
+        return new CustomUserDetails(user, authorities);
     }
-
-
 }

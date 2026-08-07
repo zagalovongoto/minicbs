@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Renouvellement Obligatoire - Mini CBS</title>
+    <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <style>
+        body { height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f8fafc !important; }
+        .forced-box { max-width: 480px; width: 100%; padding: 2rem; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+    </style>
+</head>
+<body>
+
+<div class="forced-box">
+    <div class="text-center mb-4">
+        <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm mb-3" style="width: 56px; height: 56px;">
+            <i class="bi bi-shield-exclamation text-danger fs-3"></i>
+        </div>
+        <h4 class="fw-bold text-dark m-0">Mise à jour exigée</h4>
+        <p class="text-muted small mt-1">Votre mot de passe a expiré ou requiert une réinitialisation réglementaire.</p>
+    </div>
+
+    <!-- Alertes -->
+    <div th:if="${warningMessage}" class="alert alert-danger-saas d-flex align-items-center gap-2 mb-4 p-3 rounded-3 small">
+        <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+        <span th:text="${warningMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger p-2.5 rounded-3 border-0 small fw-medium mb-3" th:text="${errorMessage}">Erreur</div>
+
+    <div th:if="${successMessage}" class="alert alert-success p-3 rounded-3 border-0 small bg-success bg-opacity-10 text-success fw-medium mb-4">
+        <i class="bi bi-check-circle-fill me-1"></i> <span th:text="${successMessage}"></span>
+        <a th:href="@{/}" class="d-block mt-3 btn btn-success w-100 py-2 fw-bold rounded-3 shadow-sm">Accéder à la Console Mini CBS</a>
+    </div>
+
+    <!-- FORMULAIRE DE SOUMISSION DIRECTE -->
+    <form th:unless="${successMessage}" th:action="@{/profile/change-password}" method="post">
+        <div class="mb-3">
+            <label class="form-label-saas">Mot de passe actuel</label>
+            <input type="password" name="currentPassword" class="form-control form-control-saas" placeholder="••••••••••••" required autocomplete="current-password">
+        </div>
+        <div class="mb-3 border-top pt-3 mt-4">
+            <label class="form-label-saas text-primary fw-bold">Nouveau mot de passe de sécurité</label>
+            <input type="password" name="newPassword" class="form-control form-control-saas" placeholder="Minimum 8 caractères" required>
+        </div>
+        <div class="mb-4">
+            <label class="form-label-saas">Confirmez votre mot de passe</label>
+            <input type="password" name="confirmPassword" class="form-control form-control-saas" placeholder="Re-saisissez à l'identique" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm rounded-3">
+            <i class="bi bi-shield-fill-check me-1"></i> Enregistrer ma nouvelle clé d'accès
+        </button>
+    </form>
+</div>
+
+</body>
+</html>

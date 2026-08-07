@@ -19,6 +19,24 @@ spring:
     restart:
       enabled: true
 
+  # =======================
+  # SERVEUR DE MESSAGERIE #
+  # =======================
+  mail:
+    host: "${SMTP_HOST}"
+    port: "${SMTP_PORT}"
+    username: "${SMTP_USERNAME}" # Remplacez par votre e-mail Office 365
+    password: "${SMTP_PASSWORD}"       # Surchargé en production pour la sécurité
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        # Sécurisation contre les blocages de connexions infinies
+        debug: false
+
 server:
   port: 8087
   error:
@@ -34,6 +52,7 @@ minicbs:
       nom: "GIM"
       prenom: "Super Admin"
       email: "admin@gimminicbs.org"
+      username: "superadmin"
       telephone: "+2250102030405"
       password: "${MINICBS_ADMIN_PASSWORD:Admin@2026}" # Supporte la surcharge par variable d'environnement
 
@@ -77,5 +96,15 @@ minicbs:
         value: "CI0540100101999999999944"
         description: "Compte General Interne - Liaison et Compensation Interbancaire GIM"
         editable: false
+      - key: "MAIL_FROM_ADDRESS"
+        value: "giift@gim-uemoa.org"
+        description: "Adresse email d'expédition des alertes de sécurité"
+        editable: true
+      - key: "BANK_DISPLAY_NAME"
+        value: "Mini CBS"
+        description: "Nom commercial de l'établissement affiché dans les correspondances"
+        editable: true
 
+  app:
+    base-url: ${MINICBS_BASE_URL:http://localhost:8087}
 

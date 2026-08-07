@@ -2,6 +2,7 @@ package org.gimuemoa.minicbs.security.config;
 
 import lombok.RequiredArgsConstructor;
 import org.gimuemoa.minicbs.security.CustomUserDetailsService;
+import org.gimuemoa.minicbs.security.PasswordExpirationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -19,22 +21,33 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordExpirationFilter passwordExpirationFilter;
 
-    /*@Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder); // Utilise le Bean BCrypt partagé
+    // AMÉLIORATION CLÉ : Enregistrement du provider natif d'authentification lié à BCrypt
+    @Bean
+    public org.springframework.security.authentication.dao.DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
-    }*/
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Rattachement du provider d'authentification
+                .authenticationProvider(authenticationProvider())
+
+                // INJECTION DU FILTRE PRUDENTIEL DE ROTATION (ÉTAPE 2)
+                // S'exécute juste après la validation du login pour vérifier le cycle des 90 jours
+                .addFilterAfter(passwordExpirationFilter, UsernamePasswordAuthenticationFilter.class)
+
                 // 1. GESTION DES AUTORISATIONS DES URLS
                 .authorizeHttpRequests(auth -> auth
-                        // Laisser libre accès aux assets et librairies (Bootstrap, Alpine, HTMX)
-                        .requestMatchers("/css/**", "/js/**", "/vendor/**").permitAll()
+                        // Laisser libre accès aux assets et aux parcours de connexion/activation
+                        .requestMatchers("/css/**", "/js/**", "/vendor/**", "/login", "/login/activate/**").permitAll()
+
+                        // Sécurisation de l'URL de modification de mot de passe (accessible aux connectés)
+                        .requestMatchers("/profile/change-password").authenticated()
 
                         // VERROUILLAGE ÉCRAN PARAMÉTRAGE : Strictement réservé au rôle SUPER_ADMIN
                         .requestMatchers("/settings/**").hasAuthority("ROLE_SUPER_ADMIN")
@@ -43,21 +56,17 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 2. CORRECTION FORM LOGIN : Syntaxe moderne Spring Boot 3.x
-                /*.formLogin(form -> form
-                        .defaultSuccessUrl("/clients", true) // Redirection vers le tableau de bord après succès
-                        .permitAll()
-                )*/
+                // 2. CONFIGURATION DU FORMULAIRE DE CONNEXION CUSTOM GIM
                 .formLogin(form -> form
-                        .loginPage("/login")             // <-- INDISPENSABLE : Appelle votre route
-                        .loginProcessingUrl("/login")     // <-- INDISPENSABLE : Spring intercepte le POST ici
-                        .usernameParameter("email")       // Lit le champ name="email" du formulaire
-                        .passwordParameter("password")   // Lit le champ name="password" du formulaire
-                        .defaultSuccessUrl("/clients", true)    // Redirige vers le dashboard après succès
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("loginInput")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/clients", true) // Redirection vers les clients après succès
                         .permitAll()
                 )
 
-                // 3. CORRECTION LOGOUT : Syntaxe moderne Spring Boot 3.x
+                // 3. GESTION DE LA CLÔTURE DE SESSION SECURISEE CSRF
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -66,5 +75,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }

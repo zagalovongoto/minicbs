@@ -19,6 +19,7 @@ public class BankInitProperties {
         private String nom;
         private String prenom;
         private String email;
+        private String username;
         private String telephone;
         private String password;
     }
